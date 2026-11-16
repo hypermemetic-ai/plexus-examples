@@ -19,4 +19,12 @@ Every example's IR is kept in `ir/`: a showcase file as `ir/<file>.json`, kiln a
 BLESS=1 cargo test goldens
 ```
 
+Each IR's TypeScript and WIT, as `plexus-gen` writes them from the kept IR, are in `ts/<name>.plexus.ts` and `wit/<name>.wit`. plexus-gen's `goldens` test fails, showing the difference, when it writes anything else; to keep what it writes now, from `../plexus-gen`:
+
+```sh
+BLESS=1 cargo test goldens
+```
+
+The WIT in `wit/` says `func` where an example's own says `async func`: an IR's JSON does not say which methods wait.
+
 The Plexus crates are expected beside this checkout: `../plexus`, `../plexus-macros`, `../plexus-ir`. Tracker: LAYERS-9.

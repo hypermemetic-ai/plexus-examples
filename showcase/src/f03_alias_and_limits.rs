@@ -12,7 +12,7 @@ pub mod tickets {
     pub struct Tickets;
 
     impl Tickets {
-        pub fn priority(&self, id: TicketId) -> Priority {
+        pub fn priority_of(&self, id: TicketId) -> Priority {
             let _ = id;
             3
         }

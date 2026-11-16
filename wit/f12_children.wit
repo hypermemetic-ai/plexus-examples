@@ -1,0 +1,17 @@
+package plexus:tickets@0.0.1;
+
+// In the IR and not in WIT: the children.
+/// Children: activations held under this one. One that is always there, and
+/// one per key, with the method that lists the keys.
+interface tickets {
+  variant not-found {
+    no-such-project(string),
+  }
+
+  /// The names `project` answers to.
+  projects: func() -> list<string>;
+}
+
+world tickets-activation {
+  export tickets;
+}

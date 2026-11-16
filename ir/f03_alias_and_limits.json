@@ -1,7 +1,7 @@
 {
   "ir": "plexus/0",
   "activation": "tickets",
-  "hash": "0214b5d94941cabc",
+  "hash": "b92b392f97cce81a",
   "doc": "An alias names a type. Its limits are checked before the method runs.",
   "types": [
     {
@@ -17,5 +17,11 @@
       "limits": {"min": 1, "max": 5}
     }
   ],
-  "methods": [{"name": "priority", "params": [{"name": "id", "type": "ticket-id"}], "returns": "priority"}]
+  "methods": [
+    {
+      "name": "priority-of",
+      "params": [{"name": "id", "type": "ticket-id"}],
+      "returns": "priority"
+    }
+  ]
 }

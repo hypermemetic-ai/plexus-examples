@@ -1,0 +1,20 @@
+package plexus:tickets@0.0.1;
+
+/// A stream out: many items, one at a time, until there are no more.
+/// `impl Stream` may wait between items; `impl Iterator` is accepted for
+/// one that never does.
+interface tickets {
+  record change {
+    id: string,
+    status: string,
+  }
+
+  /// Every change, as it happens.
+  watch: func(under: string) -> stream<change>;
+  /// Every id under a ticket: nothing to wait for.
+  ids: func(under: string) -> stream<string>;
+}
+
+world tickets-activation {
+  export tickets;
+}

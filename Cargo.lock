@@ -273,6 +273,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "plexus-gen"
+version = "0.0.0"
+dependencies = [
+ "plexus-ir",
+ "serde_json",
+]
+
+[[package]]
 name = "plexus-ir"
 version = "0.0.0"
 dependencies = [
@@ -286,6 +294,7 @@ name = "plexus-macros"
 version = "0.0.0"
 dependencies = [
  "heck",
+ "plexus-gen",
  "plexus-ir",
  "proc-macro2",
  "quote",

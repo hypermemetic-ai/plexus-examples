@@ -1,0 +1,22 @@
+package plexus:tickets@0.0.1;
+
+/// A call that can fail names its error. The error is part of the interface.
+interface tickets {
+  record ticket {
+    id: string,
+  }
+
+  variant ticket-error {
+    not-found(string),
+    /// The title is empty.
+    no-title,
+  }
+
+  open: func(title: string) -> result<ticket, ticket-error>;
+  /// Nothing comes back; it can still fail.
+  delete: func(id: string) -> result<_, ticket-error>;
+}
+
+world tickets-activation {
+  export tickets;
+}

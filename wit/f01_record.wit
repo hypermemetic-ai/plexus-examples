@@ -1,0 +1,19 @@
+package plexus:tickets@0.0.1;
+
+/// A record: named fields.
+interface tickets {
+  /// One ticket.
+  record ticket {
+    id: string,
+    /// What it is about.
+    title: string,
+    open: bool,
+  }
+
+  /// The newest ticket.
+  newest: func() -> ticket;
+}
+
+world tickets-activation {
+  export tickets;
+}

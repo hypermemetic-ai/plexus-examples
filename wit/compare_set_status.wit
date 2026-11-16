@@ -1,0 +1,49 @@
+package plexus:tickets@0.0.1;
+
+// In the IR and not in WIT: which methods read the caller; grants, targets and roles; defaults.
+/// menger's `tickets.set_status`, as it would be written here. For the
+/// comparison with today's IR; its event has three of the real one's cases.
+interface tickets {
+  /// A ticket by any form of its address.
+  type ticket-ref = string;
+
+  type message = string;
+
+  enum status {
+    pending,
+    ready,
+    coding,
+    in-review,
+    blocked,
+    complete,
+    draft,
+    epic,
+    superseded,
+    canceled,
+    doc,
+  }
+
+  enum caller-source {
+    app,
+    api,
+    pipeline,
+  }
+
+  record tickets-event-status-changed {
+    id: ticket-ref,
+    status: status,
+  }
+
+  variant tickets-event {
+    status-changed(tickets-event-status-changed),
+    not-found(ticket-ref),
+    error(string),
+  }
+
+  /// Set a ticket's status.
+  set-status: func(id: ticket-ref, message: option<message>, restore-children: bool, source: caller-source, status: status) -> stream<tickets-event>;
+}
+
+world tickets-activation {
+  export tickets;
+}

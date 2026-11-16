@@ -1,0 +1,44 @@
+package plexus:glaze@0.0.1;
+
+/// Glaze recipes, and what a batch of one needs.
+interface glaze {
+  enum colorant {
+    clear,
+    iron,
+    copper,
+    cobalt,
+  }
+
+  record recipe {
+    name: string,
+    colorant: colorant,
+    /// The cone it matures at.
+    cone: u8,
+  }
+
+  /// What to weigh out.
+  record batch {
+    recipe: string,
+    silica-grams: u32,
+    flux-grams: u32,
+    colorant-grams: u32,
+  }
+
+  variant glaze-error {
+    /// No recipe has this name.
+    unknown(string),
+    /// A batch needs at least 100 grams.
+    too-small(u32),
+  }
+
+  /// Every recipe in the book.
+  recipes: func() -> list<recipe>;
+  /// The recipes coloured with one thing.
+  coloured: func(colorant: colorant) -> list<recipe>;
+  /// What a batch of a recipe needs.
+  weigh: func(recipe: string, grams: u32) -> result<batch, glaze-error>;
+}
+
+world glaze-activation {
+  export glaze;
+}

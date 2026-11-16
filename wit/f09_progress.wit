@@ -1,0 +1,18 @@
+package plexus:export@0.0.1;
+
+// In the IR and not in WIT: progress.
+/// Progress: what a method reports while the caller waits. Never part of
+/// the answer, and not a parameter.
+interface export {
+  record step {
+    done: u32,
+    of: u32,
+  }
+
+  /// Write every ticket to an archive; says how far along it is.
+  archive: func(under: string) -> string;
+}
+
+world export-activation {
+  export export;
+}

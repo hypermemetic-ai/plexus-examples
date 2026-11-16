@@ -1,0 +1,22 @@
+package plexus:tickets@0.0.1;
+
+// In the IR and not in WIT: any-JSON (sent as a string); a map (sent as a list of pairs).
+/// Lists, options, tuples, string-keyed maps, bytes, and any JSON.
+interface tickets {
+  record ticket {
+    labels: list<string>,
+    parent: option<string>,
+    /// Row and column on the board.
+    cell: tuple<u32, u32>,
+    counts: list<tuple<string, u32>>,
+    avatar: list<u8>,
+    /// Whatever an integration stored.
+    extra: string,
+  }
+
+  get: func(id: string) -> option<ticket>;
+}
+
+world tickets-activation {
+  export tickets;
+}

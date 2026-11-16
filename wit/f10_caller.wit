@@ -1,0 +1,16 @@
+package plexus:session@0.0.1;
+
+// In the IR and not in WIT: which methods read the caller.
+/// The user: `&Caller` is who is calling. A method that takes one needs a
+/// signed-in caller; `Option<&Caller>` lets anyone in. Neither is sent as
+/// a parameter.
+interface session {
+  /// Refused unless signed in.
+  whoami: func() -> string;
+  /// Anyone may ask.
+  greeting: func() -> string;
+}
+
+world session-activation {
+  export session;
+}

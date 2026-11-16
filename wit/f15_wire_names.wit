@@ -1,0 +1,29 @@
+package plexus:tickets@0.0.1;
+
+// In the IR and not in WIT: wire names.
+/// A case is written as its kebab name unless it says otherwise:
+/// `#[wire("In Review")]` keeps a spelling the wire already has.
+interface tickets {
+  enum status {
+    draft,
+    in-review,
+    complete,
+  }
+
+  record change-status-changed {
+    id: string,
+    status: status,
+  }
+
+  variant change {
+    status-changed(change-status-changed),
+    deleted(string),
+    cleared,
+  }
+
+  set-status: func(id: string, status: status) -> change;
+}
+
+world tickets-activation {
+  export tickets;
+}

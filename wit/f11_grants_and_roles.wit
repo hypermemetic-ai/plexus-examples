@@ -1,0 +1,19 @@
+package plexus:tickets@0.0.1;
+
+// In the IR and not in WIT: which methods read the caller; grants, targets and roles.
+/// Grants and roles. Every method is its own grant. A role is a list of
+/// grants, and may include another role. `#[target]` marks the parameter
+/// that names what the grant must be held on.
+interface tickets {
+  /// A viewer of this ticket may read it.
+  get: func(id: string) -> string;
+  /// Answers only what the caller may see.
+  list: func() -> list<string>;
+  /// An editor of this ticket may move it.
+  set-status: func(id: string, status: string) -> string;
+  delete: func(id: string) -> bool;
+}
+
+world tickets-activation {
+  export tickets;
+}

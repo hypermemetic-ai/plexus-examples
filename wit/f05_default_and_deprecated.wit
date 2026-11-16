@@ -1,0 +1,17 @@
+package plexus:tickets@0.0.1;
+
+// In the IR and not in WIT: defaults; deprecation.
+/// A default is what an absent value is taken as. A deprecated parameter
+/// still works, and says what to use.
+interface tickets {
+  record page {
+    ids: list<string>,
+    more: bool,
+  }
+
+  list: func(limit: u32, after: string, count: option<u32>) -> page;
+}
+
+world tickets-activation {
+  export tickets;
+}

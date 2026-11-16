@@ -1,0 +1,36 @@
+package plexus:tickets@0.0.1;
+
+/// An enum is one of several names. A variant's cases carry nothing, one
+/// value, or named fields.
+interface tickets {
+  enum status {
+    draft,
+    ready,
+    complete,
+  }
+
+  record change-created {
+    id: string,
+    title: string,
+  }
+
+  record change-status-changed {
+    id: string,
+    status: status,
+  }
+
+  variant change {
+    /// A ticket was filed.
+    created(change-created),
+    status-changed(change-status-changed),
+    deleted(string),
+    /// Everything went.
+    cleared,
+  }
+
+  last-change: func() -> change;
+}
+
+world tickets-activation {
+  export tickets;
+}

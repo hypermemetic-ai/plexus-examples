@@ -1,0 +1,18 @@
+package plexus:studio@0.0.1;
+
+// In the IR and not in WIT: the children.
+/// The four ways an activation holds another, by what is known when the
+/// parent is compiled.
+interface studio {
+  variant not-found {
+    no-such(string),
+  }
+
+  shelves: func() -> list<u32>;
+  suppliers: func() -> list<string>;
+  plugins: func() -> list<string>;
+}
+
+world studio-activation {
+  export studio;
+}

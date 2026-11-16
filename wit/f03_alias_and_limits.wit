@@ -1,0 +1,17 @@
+package plexus:tickets@0.0.1;
+
+// In the IR and not in WIT: limits on a value.
+/// An alias names a type. Its limits are checked before the method runs.
+interface tickets {
+  /// A ticket's id: `KILN-2`.
+  type ticket-id = string;
+
+  /// 1 is lowest, 5 is drop everything.
+  type priority = u8;
+
+  priority-of: func(id: ticket-id) -> priority;
+}
+
+world tickets-activation {
+  export tickets;
+}

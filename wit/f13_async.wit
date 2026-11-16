@@ -1,0 +1,20 @@
+package plexus:tickets@0.0.1;
+
+/// An `async fn` may wait: for a disk, for another activation. The IR does not
+/// say which methods wait, because over a wire every call is awaited. WIT
+/// does: a caller in the same process gets a promise, or a plain value.
+interface tickets {
+  record ticket {
+    id: string,
+    title: string,
+  }
+
+  /// Waits for the store.
+  get: func(id: string) -> option<ticket>;
+  /// Answers at once.
+  count: func() -> u32;
+}
+
+world tickets-activation {
+  export tickets;
+}
