@@ -33,14 +33,30 @@ pub mod kiln {
     }
 
     use futures::{Stream, StreamExt};
-    use std::cell::RefCell;
+    use plexus::Store;
+    use plexus::rusqlite::{OptionalExtension, Row, params};
 
-    #[derive(Default)]
     pub struct Kiln {
-        firings: RefCell<Vec<Firing>>,
+        store: Store,
+    }
+
+    impl Default for Kiln {
+        fn default() -> Kiln {
+            Kiln { store: Store::open("kiln", "create table if not exists firing (id integer primary key, cone integer not null, hours real not null, loaded_by text not null)") }
+        }
+    }
+
+    const FIRING: &str = "select id, cone, hours, loaded_by from firing";
+
+    fn firing(row: &Row) -> plexus::rusqlite::Result<Firing> {
+        Ok(Firing { id: row.get(0)?, cone: row.get(1)?, hours: row.get::<_, f64>(2)? as f32, loaded_by: row.get(3)? })
     }
 
     impl Kiln {
+        fn one(&self, sql: &str, id: Option<u32>) -> Option<Firing> {
+            self.store.query_row(sql, plexus::rusqlite::params_from_iter(id), firing).optional().expect("the kiln's store reads")
+        }
+
         /// Fire the kiln and write it in the log. It waits out the whole
         /// firing, reading by reading; other calls run meanwhile.
         pub async fn fire(&self, cone: u8, hours: f32, loaded_by: String) -> Result<Firing, KilnError> {
@@ -54,20 +70,21 @@ pub mod kiln {
             while readings.next().await.is_some() {
                 plexus::yield_now().await;
             }
-            let mut firings = self.firings.borrow_mut();
-            let firing = Firing { id: firings.len() as u32 + 1, cone, hours, loaded_by };
-            firings.push(firing.clone());
-            Ok(firing)
+            let id = self.store
+                .query_row("insert into firing (cone, hours, loaded_by) values (?1, ?2, ?3) returning id", params![cone, hours as f64, loaded_by], |r| r.get(0))
+                .expect("the kiln's store writes");
+            Ok(Firing { id, cone, hours, loaded_by })
         }
 
         /// Every firing, oldest first.
         pub fn log(&self) -> Vec<Firing> {
-            self.firings.borrow().clone()
+            let mut all = self.store.prepare_cached(&format!("{FIRING} order by id")).expect("the kiln's store reads");
+            all.query_map([], firing).and_then(Iterator::collect).expect("the kiln's store reads")
         }
 
         /// One firing by its id.
         pub fn get(&self, id: u32) -> Result<Firing, KilnError> {
-            self.firings.borrow().iter().find(|f| f.id == id).cloned().ok_or(KilnError::NotFound(id))
+            self.one(&format!("{FIRING} where id = ?1"), Some(id)).ok_or(KilnError::NotFound(id))
         }
 
         /// A firing as it happens: a reading every five minutes, climbing
@@ -92,7 +109,7 @@ pub mod kiln {
 
         /// The hottest firing so far, if there was one.
         pub fn hottest(&self) -> Option<Firing> {
-            self.firings.borrow().iter().max_by_key(|f| f.cone).cloned()
+            self.one(&format!("{FIRING} order by cone desc, id desc limit 1"), None)
         }
     }
 }

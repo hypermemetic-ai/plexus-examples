@@ -4,15 +4,17 @@ Small activations written with `#[plexus::activation]`. Every part of Plexus v2 
 
 | | |
 |---|---|
-| `kiln` | A kiln and its firing log: an `async fn`, an `impl Stream`, a typed error. Builds to a wasm component, and natively to the `kiln` process. |
+| `kiln` | A kiln and its firing log: an `async fn`, an `impl Stream`, a typed error; the log kept in SQLite through `plexus::Store`. Builds to a wasm component, and natively to the `kiln` process. |
 | `glaze` | Glaze recipes: a second activation, held beside the kiln. Builds to a wasm component, and natively to the `glaze` process. |
 | `showcase` | One small activation per thing the IR can say. Each compiles; none is served. |
 
 ```sh
 cargo build -p showcase
-cargo build -p kiln -p glaze --lib --profile web --target wasm32-unknown-unknown   # the components (--lib: the binaries are native)
+scripts/web.sh -p kiln -p glaze           # the components (wasm32, the web profile) in a container: SQLite to wasm needs clang;
+                                           # prints the directory of the .wasm files
 cargo run -p kiln -- --ws 127.0.0.1:0      # the kiln as a process: `main` is one line, plexus::main; no flag serves stdin and stdout
-cargo test -p kiln -p glaze                # each process over stdio and a WebSocket; the generated TypeScript client against it in Node
+cargo run -p kiln -- --data DIR            # its log in DIR/kiln.db, kept across a restart (no --data: in memory, said on stderr)
+cargo test -p kiln -p glaze                # each process over stdio and a WebSocket, the kiln's log across a restart; the generated TypeScript client against it in Node
                                            # (ignored, with why, without Node 22.13+ or ../plexus-rt/dist: npm run build there)
 ```
 
