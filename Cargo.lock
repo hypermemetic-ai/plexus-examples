@@ -585,7 +585,6 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
- "sqlite-wasm-rs",
  "tokio",
  "tokio-tungstenite",
  "tokio-util",

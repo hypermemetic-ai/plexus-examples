@@ -1,9 +1,10 @@
 #!/bin/sh
-# Build components for a page — wasm32, the web profile — in a container,
-# since SQLite compiled to wasm (plexus's `store`) needs clang:
+# Build for a page — wasm32, the web profile — in a container, for what
+# compiles C and so needs clang: the engine that holds SQLite,
 #
-#   scripts/web.sh -p kiln -p glaze
+#   scripts/web.sh --manifest-path ../plexus/engine/Cargo.toml
 #
+# (an activation that stores imports plexus:store/sql and needs none of it).
 # Arguments go to `cargo build --lib`. The image, plexus-web-build, is
 # built on first use. The sibling checkouts (../plexus, …) are mounted at
 # their own paths; the container's cargo, a newer one, builds into
