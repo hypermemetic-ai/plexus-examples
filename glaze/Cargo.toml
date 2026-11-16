@@ -1,0 +1,14 @@
+[package]
+name = "glaze"
+description = "A second toy service: glaze recipes. Held by the studio beside the kiln."
+edition = "2024"
+version = "0.0.0"
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+plexus = { path = "../../plexus" }
+wit-bindgen = "0.63"

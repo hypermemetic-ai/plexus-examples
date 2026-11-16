@@ -1,0 +1,11 @@
+[package]
+name = "showcase"
+description = "One small service per thing the IR can say. Each compiles; none is served."
+edition = "2024"
+version = "0.0.0"
+license = "MIT"
+publish = false
+
+[dependencies]
+plexus = { path = "../../plexus" }
+futures = "0.3"
