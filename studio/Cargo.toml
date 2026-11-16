@@ -1,0 +1,18 @@
+[package]
+name = "studio"
+description = "An activation that holds others: the kiln in this process, the glaze activation in another, started as a child. Native only."
+edition = "2024"
+version = "0.0.0"
+license = "MIT"
+publish = false
+
+[dependencies]
+plexus = { path = "../../plexus", features = ["tokio"] }
+kiln = { path = "../kiln" }
+tokio = { version = "1", features = ["process"] }
+
+[dev-dependencies]
+glaze = { path = "../glaze" }
+futures = "0.3"
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread", "process", "io-util", "time"] }

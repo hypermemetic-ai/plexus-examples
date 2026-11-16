@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["kiln", "glaze", "showcase"]
+members = ["kiln", "glaze", "showcase", "studio"]
 
 # A page's build: small before fast.
 [profile.web]
