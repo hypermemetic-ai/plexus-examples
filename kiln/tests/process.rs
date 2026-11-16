@@ -1,6 +1,7 @@
 //! native › An activation is served by a process: the `kiln` binary, one
 //! line of `main`, started as a child and called with `plexus::Connection`
-//! over its stdin and stdout, and over a WebSocket.
+//! over its stdin and stdout, and over a WebSocket. And storage › a process
+//! keeps what it stores: `--data DIR` across a restart, memory without.
 
 use std::process::Stdio;
 use std::time::Duration;
@@ -110,4 +111,49 @@ async fn a_reader_that_leaves_cancels_the_stream() {
     drop(items);
     // The kiln is still there, answering.
     assert_eq!(parse(&conn.call("kiln.log", ()).await.unwrap()), json!([]));
+}
+
+/// A kiln over stdio, `--data dir` when given; fire it as `fired_by`, then
+/// close it and answer its log and what it said on stderr.
+async fn a_run(data: Option<&std::path::Path>, fired_by: &[&str]) -> (Value, String) {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_kiln"));
+    command.env_remove("PLEXUS_DATA").stderr(Stdio::piped()).kill_on_drop(true);
+    if let Some(dir) = data {
+        command.arg("--data").arg(dir);
+    }
+    let (mut child, channel) = plexus::stdio::child(&mut command).unwrap();
+    let conn = connect(channel);
+    for who in fired_by {
+        conn.call("kiln.fire", json!({ "cone": 6, "hours": 0.5, "loaded-by": who })).await.unwrap();
+    }
+    let log = parse(&conn.call("kiln.log", ()).await.unwrap());
+    drop(conn);
+    let mut said = String::new();
+    tokio::io::AsyncReadExt::read_to_string(child.stderr.as_mut().unwrap(), &mut said).await.unwrap();
+    assert!(tokio::time::timeout(Duration::from_secs(5), child.wait()).await.expect("the kiln exits").unwrap().success());
+    (log, said)
+}
+
+#[tokio::test]
+async fn a_restart_on_the_same_data_directory_keeps_the_log() {
+    let dir = std::env::temp_dir().join(format!("kiln-restart-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    let (first, said) = a_run(Some(&dir), &["ada", "bo"]).await;
+    assert_eq!(first.as_array().unwrap().len(), 2);
+    assert_eq!(said, "", "a kiln given a directory says nothing");
+    assert!(dir.join("kiln.db").is_file());
+    let (after, _) = a_run(Some(&dir), &["cy"]).await;
+    let by: Vec<_> = after.as_array().unwrap().iter().map(|f| (f["id"].as_u64().unwrap(), f["loaded-by"].as_str().unwrap().to_owned())).collect();
+    assert_eq!(by, [(1, "ada".into()), (2, "bo".into()), (3, "cy".into())]);
+    std::fs::remove_dir_all(&dir).unwrap();
+}
+
+#[tokio::test]
+async fn with_no_data_directory_the_log_is_in_memory_and_said_once() {
+    let (log, said) = a_run(None, &["ada", "bo"]).await;
+    assert_eq!(log.as_array().unwrap().len(), 2);
+    assert_eq!(said.lines().filter(|l| l.contains("in memory")).count(), 1, "{said}");
+    assert_eq!(said.lines().count(), 1, "{said}");
+    let (log, _) = a_run(None, &[]).await;
+    assert_eq!(log, json!([]), "a kiln with no directory kept its log");
 }
