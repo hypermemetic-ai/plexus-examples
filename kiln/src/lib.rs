@@ -1,5 +1,5 @@
 /// A kiln, and the log of what was fired in it.
-#[plexus::service]
+#[plexus::activation]
 mod kiln {
     /// One firing.
     pub struct Firing {

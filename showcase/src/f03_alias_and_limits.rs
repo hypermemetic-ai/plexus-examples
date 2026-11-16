@@ -1,5 +1,5 @@
 /// An alias names a type. Its limits are checked before the method runs.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod tickets {
     /// A ticket's id: `KILN-2`.
     #[limit(min_len = 3, max_len = 64, pattern = "^[A-Z]+-[0-9]+$")]

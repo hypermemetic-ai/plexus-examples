@@ -1,8 +1,8 @@
-/// Children: services held under this one. One that is always there, and
+/// Children: activations held under this one. One that is always there, and
 /// one per key, with the method that lists the keys.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod tickets {
-    /// Two services of their own, written elsewhere.
+    /// Two activations of their own, written elsewhere.
     pub struct Commits;
     pub struct Project;
 

@@ -1,6 +1,6 @@
 /// A default is what an absent value is taken as. A deprecated parameter
 /// still works, and says what to use.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod tickets {
     pub struct Page {
         pub ids: Vec<String>,

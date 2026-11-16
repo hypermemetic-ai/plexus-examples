@@ -1,6 +1,6 @@
 [package]
 name = "kiln"
-description = "A toy service: a kiln and its firing log. Written with #[service]; its WIT is generated."
+description = "A toy activation: a kiln and its firing log. Written with #[activation]; its WIT is generated."
 edition = "2024"
 version = "0.0.0"
 license = "MIT"

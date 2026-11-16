@@ -1,5 +1,5 @@
 /// A record: named fields.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod tickets {
     /// One ticket.
     pub struct Ticket {

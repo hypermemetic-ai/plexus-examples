@@ -1,7 +1,7 @@
 /// A stream out: many items, one at a time, until there are no more.
 /// `impl Stream` may wait between items; `impl Iterator` is accepted for
 /// one that never does.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod tickets {
     use futures::{Stream, StreamExt};
 

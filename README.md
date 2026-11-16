@@ -1,12 +1,12 @@
 # plexus-examples
 
-Small services written with `#[plexus::service]`. Every part of Plexus v2 is proven on them.
+Small activations written with `#[plexus::activation]`. Every part of Plexus v2 is proven on them.
 
 | | |
 |---|---|
 | `kiln` | A kiln and its firing log: an `async fn`, an `impl Stream`, a typed error. Builds to a wasm component. |
-| `glaze` | Glaze recipes: a second service, held beside the kiln. Builds to a wasm component. |
-| `showcase` | One small service per thing the IR can say. Each compiles; none is served. |
+| `glaze` | Glaze recipes: a second activation, held beside the kiln. Builds to a wasm component. |
+| `showcase` | One small activation per thing the IR can say. Each compiles; none is served. |
 
 ```sh
 cargo build -p showcase

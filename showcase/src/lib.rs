@@ -1,5 +1,5 @@
-//! One small service per thing the IR can say. Each is a module that
-//! compiles as ordinary Rust; `#[plexus::service(describe)]` gives it its
+//! One small activation per thing the IR can say. Each is a module that
+//! compiles as ordinary Rust; `#[plexus::activation(describe)]` gives it its
 //! `IR`, `WIT` and `PROTO`. None is served.
 #![allow(dead_code)]
 

@@ -1,7 +1,7 @@
 /// The user: `&Caller` is who is calling. A method that takes one needs a
 /// signed-in caller; `Option<&Caller>` lets anyone in. Neither is sent as
 /// a parameter.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod session {
     use plexus::Caller;
 

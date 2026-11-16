@@ -1,7 +1,7 @@
 /// Grants and roles. Every method is its own grant. A role is a list of
 /// grants, and may include another role. `#[target]` marks the parameter
 /// that names what the grant must be held on.
-#[plexus::service(describe, roles(viewer = ["get", "list"], editor = [viewer, "set_status"], admin = [editor, "delete"]))]
+#[plexus::activation(describe, roles(viewer = ["get", "list"], editor = [viewer, "set_status"], admin = [editor, "delete"]))]
 pub mod tickets {
     use plexus::Caller;
 

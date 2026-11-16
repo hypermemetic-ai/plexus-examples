@@ -1,13 +1,13 @@
-/// The four ways a service holds another, by what is known when the
+/// The four ways an activation holds another, by what is known when the
 /// parent is compiled.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod studio {
-    use plexus::Service;
+    use plexus::Activation;
 
-    /// A service written in this crate.
+    /// An activation written in this crate.
     pub struct Kiln;
 
-    /// An interface: any service with these methods fits.
+    /// An interface: any activation with these methods fits.
     pub trait Glazes {
         fn recipes(&self) -> Vec<String>;
     }
@@ -33,7 +33,7 @@ pub mod studio {
             if number < 4 { Ok(Kiln) } else { Err(NotFound::NoSuch(number.to_string())) }
         }
 
-        /// 3. The interface is known; which service fills it is not. It
+        /// 3. The interface is known; which activation fills it is not. It
         /// may be here or on another machine. Checked once, when it is
         /// connected, by its hash.
         #[child(list = "suppliers")]
@@ -44,7 +44,7 @@ pub mod studio {
         /// 4. Nothing is known. Its IR is read while running, and it is
         /// called by name, with JSON.
         #[child(list = "plugins")]
-        pub fn plugin(&self, name: &str) -> Result<Box<dyn Service>, NotFound> {
+        pub fn plugin(&self, name: &str) -> Result<Box<dyn Activation>, NotFound> {
             Err(NotFound::NoSuch(name.to_owned()))
         }
 

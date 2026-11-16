@@ -1,6 +1,6 @@
 /// A stream in: `Input<T>` is what the caller sends while the call runs.
 /// It is not one of the parameters.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod media {
     use plexus::{Bytes, Input};
 

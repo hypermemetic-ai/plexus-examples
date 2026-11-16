@@ -1,6 +1,6 @@
 [package]
 name = "glaze"
-description = "A second toy service: glaze recipes. Held by the studio beside the kiln."
+description = "A second toy activation: glaze recipes. Held by the studio beside the kiln."
 edition = "2024"
 version = "0.0.0"
 license = "MIT"

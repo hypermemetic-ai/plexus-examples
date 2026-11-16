@@ -1,6 +1,6 @@
 /// menger's `tickets.set_status`, as it would be written here. For the
 /// comparison with today's IR; its event has three of the real one's cases.
-#[plexus::service(describe, roles(editor = ["set_status"]))]
+#[plexus::activation(describe, roles(editor = ["set_status"]))]
 pub mod tickets {
     use plexus::Caller;
 

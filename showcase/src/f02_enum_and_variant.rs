@@ -1,6 +1,6 @@
 /// An enum is one of several names. A variant's cases carry nothing, one
 /// value, or named fields.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod tickets {
     pub enum Status {
         Draft,

@@ -1,5 +1,5 @@
 /// A call that can fail names its error. The error is part of the interface.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod tickets {
     pub struct Ticket {
         pub id: String,

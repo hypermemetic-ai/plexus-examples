@@ -1,5 +1,5 @@
 /// Lists, options, tuples, string-keyed maps, bytes, and any JSON.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod tickets {
     use plexus::{Bytes, Json};
     use std::collections::BTreeMap;

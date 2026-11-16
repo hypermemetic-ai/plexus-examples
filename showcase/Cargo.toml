@@ -1,6 +1,6 @@
 [package]
 name = "showcase"
-description = "One small service per thing the IR can say. Each compiles; none is served."
+description = "One small activation per thing the IR can say. Each compiles; none is served."
 edition = "2024"
 version = "0.0.0"
 license = "MIT"

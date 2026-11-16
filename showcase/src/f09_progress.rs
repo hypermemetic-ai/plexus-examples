@@ -1,6 +1,6 @@
 /// Progress: what a method reports while the caller waits. Never part of
 /// the answer, and not a parameter.
-#[plexus::service(describe)]
+#[plexus::activation(describe)]
 pub mod export {
     use plexus::Progress;
 
