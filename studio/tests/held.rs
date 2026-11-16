@@ -159,7 +159,16 @@ async fn each_way_of_holding() {
     for taken in 1..=TOP_UP as u64 + 8 {
         assert_eq!(parse(&items.next().await.unwrap().unwrap()), json!(taken - 1));
         tokio::time::sleep(Duration::from_millis(5)).await;
-        let ahead = count(&conn).await.0 - taken;
+        let mut ahead = count(&conn).await.0 - taken;
+        // At the top-up half a window is made again, each item crossing to
+        // the meter's thread and back: more than one pause's worth.
+        for _ in 0..2000 {
+            if taken != TOP_UP as u64 || ahead >= WINDOW as u64 {
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(1)).await;
+            ahead = count(&conn).await.0 - taken;
+        }
         assert!(ahead <= WINDOW as u64, "the meter made {ahead} more than the caller took");
         furthest = furthest.max(ahead);
     }
