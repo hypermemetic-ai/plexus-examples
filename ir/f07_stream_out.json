@@ -1,0 +1,26 @@
+{
+  "ir": "plexus/0",
+  "activation": "tickets",
+  "hash": "1bbc1163a752a95b",
+  "doc": "A stream out: many items, one at a time, until there are no more.\n`impl Stream` may wait between items; `impl Iterator` is accepted for\none that never does.",
+  "types": [
+    {
+      "name": "change",
+      "record": [{"name": "id", "type": "string"}, {"name": "status", "type": "string"}]
+    }
+  ],
+  "methods": [
+    {
+      "name": "watch",
+      "doc": "Every change, as it happens.",
+      "params": [{"name": "under", "type": "string"}],
+      "stream": "change"
+    },
+    {
+      "name": "ids",
+      "doc": "Every id under a ticket: nothing to wait for.",
+      "params": [{"name": "under", "type": "string"}],
+      "stream": "string"
+    }
+  ]
+}

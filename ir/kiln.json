@@ -1,0 +1,78 @@
+{
+  "ir": "plexus/0",
+  "activation": "kiln",
+  "hash": "a4fe48dbd62f1985",
+  "doc": "A kiln, and the log of what was fired in it.",
+  "types": [
+    {
+      "name": "firing",
+      "doc": "One firing.",
+      "record": [
+        {"name": "id", "type": "u32"},
+        {"name": "cone", "type": "u8", "doc": "How hot: the pyrometric cone, 1 to 10."},
+        {"name": "hours", "type": "f32"},
+        {"name": "loaded-by", "type": "string"}
+      ]
+    },
+    {
+      "name": "kiln-error",
+      "variant": [
+        {
+          "name": "too-hot",
+          "type": "u8",
+          "doc": "The kiln goes to cone 10; this asked for more."
+        },
+        {"name": "not-found", "type": "u32", "doc": "No firing has this id."},
+        {"name": "unattended", "doc": "Nobody loaded it."}
+      ]
+    },
+    {
+      "name": "reading",
+      "doc": "The kiln's temperature at one moment of a firing.",
+      "record": [
+        {"name": "minute", "type": "u32"},
+        {"name": "celsius", "type": "f32"},
+        {"name": "phase", "type": "phase"}
+      ]
+    },
+    {"name": "phase", "enum": [{"name": "climbing"}, {"name": "holding"}, {"name": "cooling"}]}
+  ],
+  "methods": [
+    {
+      "name": "fire",
+      "doc": "Fire the kiln and write it in the log. It waits out the whole\nfiring, reading by reading; other calls run meanwhile.",
+      "params": [
+        {"name": "cone", "type": "u8"},
+        {"name": "hours", "type": "f32"},
+        {"name": "loaded-by", "type": "string"}
+      ],
+      "returns": "firing",
+      "fails": "kiln-error"
+    },
+    {
+      "name": "log",
+      "doc": "Every firing, oldest first.",
+      "params": [],
+      "returns": {"list": "firing"}
+    },
+    {
+      "name": "get",
+      "doc": "One firing by its id.",
+      "params": [{"name": "id", "type": "u32"}],
+      "returns": "firing",
+      "fails": "kiln-error"
+    },
+    {
+      "name": "heat",
+      "doc": "A firing as it happens: a reading every five minutes, climbing\nto the cone's temperature, holding there, then cooling. The\nnext reading is not worked out until the last one is taken.",
+      "params": [{"name": "cone", "type": "u8"}, {"name": "hours", "type": "f32"}],
+      "stream": "reading"
+    },
+    {
+      "name": "hottest",
+      "doc": "The hottest firing so far, if there was one.",
+      "params": [],
+      "returns": {"option": "firing"}
+    }
+  ]
+}

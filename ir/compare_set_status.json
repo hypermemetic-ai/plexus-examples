@@ -1,0 +1,56 @@
+{
+  "ir": "plexus/0",
+  "activation": "tickets",
+  "hash": "072b67cf9be6f8ed",
+  "doc": "menger's `tickets.set_status`, as it would be written here. For the\ncomparison with today's IR; its event has three of the real one's cases.",
+  "roles": [{"name": "editor", "grants": ["tickets.set-status"]}],
+  "types": [
+    {"name": "ticket-ref", "doc": "A ticket by any form of its address.", "alias": "string"},
+    {"name": "message", "alias": "string"},
+    {
+      "name": "status",
+      "enum": [
+        {"name": "pending"},
+        {"name": "ready"},
+        {"name": "coding"},
+        {"name": "in-review"},
+        {"name": "blocked"},
+        {"name": "complete"},
+        {"name": "draft"},
+        {"name": "epic"},
+        {"name": "superseded"},
+        {"name": "canceled"},
+        {"name": "doc"}
+      ]
+    },
+    {"name": "caller-source", "enum": [{"name": "app"}, {"name": "api"}, {"name": "pipeline"}]},
+    {
+      "name": "tickets-event",
+      "variant": [
+        {
+          "name": "status-changed",
+          "record": [{"name": "id", "type": "ticket-ref"}, {"name": "status", "type": "status"}]
+        },
+        {"name": "not-found", "type": "ticket-ref"},
+        {"name": "error", "type": "string"}
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "name": "set-status",
+      "doc": "Set a ticket's status.",
+      "caller": "required",
+      "grant": "tickets.set-status",
+      "target": "id",
+      "params": [
+        {"name": "id", "type": "ticket-ref"},
+        {"name": "message", "type": {"option": "message"}},
+        {"name": "restore-children", "type": "bool", "default": false},
+        {"name": "source", "type": "caller-source", "default": "api"},
+        {"name": "status", "type": "status"}
+      ],
+      "stream": "tickets-event"
+    }
+  ]
+}

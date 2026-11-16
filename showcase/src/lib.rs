@@ -1,6 +1,7 @@
 //! One small activation per thing the IR can say. Each is a module that
 //! compiles as ordinary Rust; `#[plexus::activation(describe)]` gives it its
-//! `IR`, `WIT` and `PROTO`. None is served.
+//! `IR`, `WIT` and `CLIENT_TS`. Each IR is kept in `ir/` (see the README).
+//! None is served.
 #![allow(dead_code)]
 
 pub mod f01_record;
@@ -17,4 +18,5 @@ pub mod f11_grants_and_roles;
 pub mod f12_children;
 pub mod f13_async;
 pub mod f14_four_ways_to_hold;
+pub mod f15_wire_names;
 pub mod compare_set_status;

@@ -1,0 +1,18 @@
+{
+  "ir": "plexus/0",
+  "activation": "tickets",
+  "hash": "06d54522f2da0ae8",
+  "doc": "A record: named fields.",
+  "types": [
+    {
+      "name": "ticket",
+      "doc": "One ticket.",
+      "record": [
+        {"name": "id", "type": "string"},
+        {"name": "title", "type": "string", "doc": "What it is about."},
+        {"name": "open", "type": "bool"}
+      ]
+    }
+  ],
+  "methods": [{"name": "newest", "doc": "The newest ticket.", "params": [], "returns": "ticket"}]
+}

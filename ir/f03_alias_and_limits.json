@@ -1,0 +1,21 @@
+{
+  "ir": "plexus/0",
+  "activation": "tickets",
+  "hash": "0214b5d94941cabc",
+  "doc": "An alias names a type. Its limits are checked before the method runs.",
+  "types": [
+    {
+      "name": "ticket-id",
+      "doc": "A ticket's id: `KILN-2`.",
+      "alias": "string",
+      "limits": {"min-len": 3, "max-len": 64, "pattern": "^[A-Z]+-[0-9]+$"}
+    },
+    {
+      "name": "priority",
+      "doc": "1 is lowest, 5 is drop everything.",
+      "alias": "u8",
+      "limits": {"min": 1, "max": 5}
+    }
+  ],
+  "methods": [{"name": "priority", "params": [{"name": "id", "type": "ticket-id"}], "returns": "priority"}]
+}

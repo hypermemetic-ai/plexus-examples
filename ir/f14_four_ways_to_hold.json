@@ -1,0 +1,43 @@
+{
+  "ir": "plexus/0",
+  "activation": "studio",
+  "hash": "f308dc639d213ac1",
+  "doc": "The four ways an activation holds another, by what is known when the\nparent is compiled.",
+  "types": [{"name": "not-found", "variant": [{"name": "no-such", "type": "string"}]}],
+  "methods": [
+    {"name": "shelves", "params": [], "returns": {"list": "u32"}},
+    {"name": "suppliers", "params": [], "returns": {"list": "string"}},
+    {"name": "plugins", "params": [], "returns": {"list": "string"}}
+  ],
+  "children": [
+    {
+      "name": "kiln",
+      "activation": "kiln",
+      "doc": "1. Known, and always there. The compiler checks every call."
+    },
+    {
+      "name": "shelf",
+      "activation": "kiln",
+      "key": {"name": "number", "type": "u32"},
+      "list": "shelves",
+      "fails": "not-found",
+      "doc": "2. Known, one per key. Which keys exist is asked while running."
+    },
+    {
+      "name": "supplier",
+      "interface": "glazes",
+      "key": {"name": "name", "type": "string"},
+      "list": "suppliers",
+      "fails": "not-found",
+      "doc": "3. The interface is known; which activation fills it is not. It\nmay be here or on another machine. Checked once, when it is\nconnected, by its hash."
+    },
+    {
+      "name": "plugin",
+      "any": true,
+      "key": {"name": "name", "type": "string"},
+      "list": "plugins",
+      "fails": "not-found",
+      "doc": "4. Nothing is known. Its IR is read while running, and it is\ncalled by name, with JSON."
+    }
+  ]
+}

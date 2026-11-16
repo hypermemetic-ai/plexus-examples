@@ -1,0 +1,28 @@
+{
+  "ir": "plexus/0",
+  "activation": "media",
+  "hash": "98505b970aaba5a1",
+  "doc": "A stream in: `Input<T>` is what the caller sends while the call runs.\nIt is not one of the parameters.",
+  "types": [
+    {
+      "name": "kept",
+      "record": [{"name": "sha256", "type": "string"}, {"name": "bytes", "type": "u64"}]
+    }
+  ],
+  "methods": [
+    {
+      "name": "put",
+      "doc": "Keep a file. The caller streams its bytes in.",
+      "params": [{"name": "name", "type": "string"}],
+      "input": "bytes",
+      "returns": "kept"
+    },
+    {
+      "name": "tokens",
+      "doc": "Count a run's tokens: a stream in of a type of its own.",
+      "params": [{"name": "run", "type": "string"}],
+      "input": "string",
+      "returns": "u32"
+    }
+  ]
+}

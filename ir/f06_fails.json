@@ -1,0 +1,30 @@
+{
+  "ir": "plexus/0",
+  "activation": "tickets",
+  "hash": "323d85c1285ebabc",
+  "doc": "A call that can fail names its error. The error is part of the interface.",
+  "types": [
+    {"name": "ticket", "record": [{"name": "id", "type": "string"}]},
+    {
+      "name": "ticket-error",
+      "variant": [
+        {"name": "not-found", "type": "string"},
+        {"name": "no-title", "doc": "The title is empty."}
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "name": "open",
+      "params": [{"name": "title", "type": "string"}],
+      "returns": "ticket",
+      "fails": "ticket-error"
+    },
+    {
+      "name": "delete",
+      "doc": "Nothing comes back; it can still fail.",
+      "params": [{"name": "id", "type": "string"}],
+      "fails": "ticket-error"
+    }
+  ]
+}

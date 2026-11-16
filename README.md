@@ -13,4 +13,10 @@ cargo build -p showcase
 cargo build -p kiln -p glaze --profile web --target wasm32-unknown-unknown
 ```
 
-The Plexus crates are expected beside this checkout: `../plexus`, `../plexus-macros`. Tracker: LAYERS-9.
+Every example's IR is kept in `ir/`: a showcase file as `ir/<file>.json`, kiln and glaze as `ir/kiln.json` and `ir/glaze.json`. plexus-macros' `goldens` test fails, showing the difference, when the macro writes anything else; plexus-ir reads and writes each back. To keep what the macro writes now, from `../plexus-macros`:
+
+```sh
+BLESS=1 cargo test goldens
+```
+
+The Plexus crates are expected beside this checkout: `../plexus`, `../plexus-macros`, `../plexus-ir`. Tracker: LAYERS-9.

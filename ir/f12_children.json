@@ -1,0 +1,26 @@
+{
+  "ir": "plexus/0",
+  "activation": "tickets",
+  "hash": "502d5253ad9b5599",
+  "doc": "Children: activations held under this one. One that is always there, and\none per key, with the method that lists the keys.",
+  "types": [{"name": "not-found", "variant": [{"name": "no-such-project", "type": "string"}]}],
+  "methods": [
+    {
+      "name": "projects",
+      "doc": "The names `project` answers to.",
+      "params": [],
+      "returns": {"list": "string"}
+    }
+  ],
+  "children": [
+    {"name": "commits", "activation": "commits", "doc": "Always there: `tickets.commits.*`"},
+    {
+      "name": "project",
+      "activation": "project",
+      "key": {"name": "name", "type": "string"},
+      "list": "projects",
+      "fails": "not-found",
+      "doc": "One per name: `tickets.project.<name>.*`"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "ir": "plexus/0",
+  "activation": "glaze",
+  "hash": "4854f4dff7f0146d",
+  "doc": "Glaze recipes, and what a batch of one needs.",
+  "types": [
+    {
+      "name": "colorant",
+      "enum": [{"name": "clear"}, {"name": "iron"}, {"name": "copper"}, {"name": "cobalt"}]
+    },
+    {
+      "name": "recipe",
+      "record": [
+        {"name": "name", "type": "string"},
+        {"name": "colorant", "type": "colorant"},
+        {"name": "cone", "type": "u8", "doc": "The cone it matures at."}
+      ]
+    },
+    {
+      "name": "batch",
+      "doc": "What to weigh out.",
+      "record": [
+        {"name": "recipe", "type": "string"},
+        {"name": "silica-grams", "type": "u32"},
+        {"name": "flux-grams", "type": "u32"},
+        {"name": "colorant-grams", "type": "u32"}
+      ]
+    },
+    {
+      "name": "glaze-error",
+      "variant": [
+        {"name": "unknown", "type": "string", "doc": "No recipe has this name."},
+        {"name": "too-small", "type": "u32", "doc": "A batch needs at least 100 grams."}
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "name": "recipes",
+      "doc": "Every recipe in the book.",
+      "params": [],
+      "returns": {"list": "recipe"}
+    },
+    {
+      "name": "coloured",
+      "doc": "The recipes coloured with one thing.",
+      "params": [{"name": "colorant", "type": "colorant"}],
+      "returns": {"list": "recipe"}
+    },
+    {
+      "name": "weigh",
+      "doc": "What a batch of a recipe needs.",
+      "params": [{"name": "recipe", "type": "string"}, {"name": "grams", "type": "u32"}],
+      "returns": "batch",
+      "fails": "glaze-error"
+    }
+  ]
+}

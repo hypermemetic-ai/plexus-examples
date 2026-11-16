@@ -1,0 +1,30 @@
+{
+  "ir": "plexus/0",
+  "activation": "tickets",
+  "hash": "ce0507a52e271141",
+  "doc": "Lists, options, tuples, string-keyed maps, bytes, and any JSON.",
+  "types": [
+    {
+      "name": "ticket",
+      "record": [
+        {"name": "labels", "type": {"list": "string"}},
+        {"name": "parent", "type": {"option": "string"}},
+        {
+          "name": "cell",
+          "type": {"tuple": ["u32", "u32"]},
+          "doc": "Row and column on the board."
+        },
+        {"name": "counts", "type": {"map": "u32"}},
+        {"name": "avatar", "type": "bytes"},
+        {"name": "extra", "type": "json", "doc": "Whatever an integration stored."}
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "name": "get",
+      "params": [{"name": "id", "type": "string"}],
+      "returns": {"option": "ticket"}
+    }
+  ]
+}

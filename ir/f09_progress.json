@@ -1,0 +1,16 @@
+{
+  "ir": "plexus/0",
+  "activation": "export",
+  "hash": "bbfb7901dbd4100f",
+  "doc": "Progress: what a method reports while the caller waits. Never part of\nthe answer, and not a parameter.",
+  "types": [{"name": "step", "record": [{"name": "done", "type": "u32"}, {"name": "of", "type": "u32"}]}],
+  "methods": [
+    {
+      "name": "archive",
+      "doc": "Write every ticket to an archive; says how far along it is.",
+      "params": [{"name": "under", "type": "string"}],
+      "progress": "step",
+      "returns": "string"
+    }
+  ]
+}

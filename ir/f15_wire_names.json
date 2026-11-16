@@ -1,0 +1,31 @@
+{
+  "ir": "plexus/0",
+  "activation": "tickets",
+  "hash": "43acd59c587f3318",
+  "doc": "A case is written as its kebab name unless it says otherwise:\n`#[wire(\"In Review\")]` keeps a spelling the wire already has.",
+  "types": [
+    {
+      "name": "status",
+      "enum": [{"name": "draft"}, {"name": "in-review", "wire": "In Review"}, {"name": "complete"}]
+    },
+    {
+      "name": "change",
+      "variant": [
+        {
+          "name": "status-changed",
+          "wire": "Moved",
+          "record": [{"name": "id", "type": "string"}, {"name": "status", "type": "status"}]
+        },
+        {"name": "deleted", "wire": "Gone", "type": "string"},
+        {"name": "cleared", "wire": "All gone"}
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "name": "set-status",
+      "params": [{"name": "id", "type": "string"}, {"name": "status", "type": "status"}],
+      "returns": "change"
+    }
+  ]
+}

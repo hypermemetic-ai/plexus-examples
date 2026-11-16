@@ -1,0 +1,48 @@
+{
+  "ir": "plexus/0",
+  "activation": "tickets",
+  "hash": "8719fd908caae22b",
+  "doc": "Grants and roles. Every method is its own grant. A role is a list of\ngrants, and may include another role. `#[target]` marks the parameter\nthat names what the grant must be held on.",
+  "roles": [
+    {"name": "viewer", "grants": ["tickets.get", "tickets.list"]},
+    {"name": "editor", "includes": ["viewer"], "grants": ["tickets.set-status"]},
+    {"name": "admin", "includes": ["editor"], "grants": ["tickets.delete"]}
+  ],
+  "types": [],
+  "methods": [
+    {
+      "name": "get",
+      "doc": "A viewer of this ticket may read it.",
+      "caller": "required",
+      "grant": "tickets.get",
+      "target": "id",
+      "params": [{"name": "id", "type": "string"}],
+      "returns": "string"
+    },
+    {
+      "name": "list",
+      "doc": "Answers only what the caller may see.",
+      "caller": "required",
+      "grant": "tickets.list",
+      "params": [],
+      "returns": {"list": "string"}
+    },
+    {
+      "name": "set-status",
+      "doc": "An editor of this ticket may move it.",
+      "caller": "required",
+      "grant": "tickets.set-status",
+      "target": "id",
+      "params": [{"name": "id", "type": "string"}, {"name": "status", "type": "string"}],
+      "returns": "string"
+    },
+    {
+      "name": "delete",
+      "caller": "required",
+      "grant": "tickets.delete",
+      "target": "id",
+      "params": [{"name": "id", "type": "string"}],
+      "returns": "bool"
+    }
+  ]
+}

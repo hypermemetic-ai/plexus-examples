@@ -1,0 +1,30 @@
+{
+  "ir": "plexus/0",
+  "activation": "tickets",
+  "hash": "2400600f8a1dd2ee",
+  "doc": "A default is what an absent value is taken as. A deprecated parameter\nstill works, and says what to use.",
+  "types": [
+    {
+      "name": "page",
+      "record": [
+        {"name": "ids", "type": {"list": "string"}},
+        {"name": "more", "type": "bool", "default": false}
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "name": "list",
+      "params": [
+        {"name": "limit", "type": "u32", "default": 50},
+        {"name": "after", "type": "string", "default": ""},
+        {
+          "name": "count",
+          "type": {"option": "u32"},
+          "deprecated": {"since": "0.3", "note": "use `limit`"}
+        }
+      ],
+      "returns": "page"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "ir": "plexus/0",
+  "activation": "tickets",
+  "hash": "9bde84512db4bcf6",
+  "doc": "An enum is one of several names. A variant's cases carry nothing, one\nvalue, or named fields.",
+  "types": [
+    {"name": "status", "enum": [{"name": "draft"}, {"name": "ready"}, {"name": "complete"}]},
+    {
+      "name": "change",
+      "variant": [
+        {
+          "name": "created",
+          "record": [{"name": "id", "type": "string"}, {"name": "title", "type": "string"}],
+          "doc": "A ticket was filed."
+        },
+        {
+          "name": "status-changed",
+          "record": [{"name": "id", "type": "string"}, {"name": "status", "type": "status"}]
+        },
+        {"name": "deleted", "type": "string"},
+        {"name": "cleared", "doc": "Everything went."}
+      ]
+    }
+  ],
+  "methods": [{"name": "last-change", "params": [], "returns": "change"}]
+}

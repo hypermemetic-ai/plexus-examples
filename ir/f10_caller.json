@@ -1,0 +1,23 @@
+{
+  "ir": "plexus/0",
+  "activation": "session",
+  "hash": "8b3dab39752e35a2",
+  "doc": "The user: `&Caller` is who is calling. A method that takes one needs a\nsigned-in caller; `Option<&Caller>` lets anyone in. Neither is sent as\na parameter.",
+  "types": [],
+  "methods": [
+    {
+      "name": "whoami",
+      "doc": "Refused unless signed in.",
+      "caller": "required",
+      "params": [],
+      "returns": "string"
+    },
+    {
+      "name": "greeting",
+      "doc": "Anyone may ask.",
+      "caller": "optional",
+      "params": [],
+      "returns": "string"
+    }
+  ]
+}
