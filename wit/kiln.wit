@@ -35,7 +35,7 @@ interface kiln {
 
   /// Fire the kiln and write it in the log. It waits out the whole
   /// firing, reading by reading; other calls run meanwhile.
-  fire: func(cone: u8, hours: f32, loaded-by: string) -> result<firing, kiln-error>;
+  fire: async func(cone: u8, hours: f32, loaded-by: string) -> result<firing, kiln-error>;
   /// Every firing, oldest first.
   log: func() -> list<firing>;
   /// One firing by its id.
@@ -43,7 +43,7 @@ interface kiln {
   /// A firing as it happens: a reading every five minutes, climbing
   /// to the cone's temperature, holding there, then cooling. The
   /// next reading is not worked out until the last one is taken.
-  heat: func(cone: u8, hours: f32) -> stream<reading>;
+  heat: async func(cone: u8, hours: f32) -> stream<reading>;
   /// The hottest firing so far, if there was one.
   hottest: func() -> option<firing>;
 }

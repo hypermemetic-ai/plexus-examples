@@ -1,4 +1,4 @@
-// Generated from the IR of `tickets` (interface e70e923252c0fb62). Not edited by hand.
+// Generated from the IR of `tickets` (interface 61fb6bd3d5cf344a). Not edited by hand.
 
 import { Connection, Server, each } from "./plexus-rt.ts";
 
@@ -8,12 +8,12 @@ const toTicket = (v: Ticket): any => ({ "id": v.id, "title": v.title });
 const fromTicket = (j: any): Ticket => ({ id: j["id"], title: j["title"] });
 
 /// The IR this file was generated from: what `_ir` answers.
-export const ticketsIr = {"ir": "plexus/0", "activation": "tickets", "hash": "e70e923252c0fb62", "doc": "An `async fn` may wait: for a disk, for another activation. The IR does not\nsay which methods wait, because over a wire every call is awaited. WIT\ndoes: a caller in the same process gets a promise, or a plain value.", "types": [{"name": "ticket", "record": [{"name": "id", "type": "string"}, {"name": "title", "type": "string"}]}], "methods": [{"name": "get", "doc": "Waits for the store.", "params": [{"name": "id", "type": "string"}], "returns": {"option": "ticket"}}, {"name": "count", "doc": "Answers at once.", "params": [], "returns": "u32"}]};
+export const ticketsIr = {"ir": "plexus/0", "activation": "tickets", "hash": "61fb6bd3d5cf344a", "doc": "An `async fn` may wait: for a disk, for another activation. The IR does not\nsay which methods wait, because over a wire every call is awaited. WIT\ndoes: a caller in the same process gets a promise, or a plain value.", "types": [{"name": "ticket", "record": [{"name": "id", "type": "string"}, {"name": "title", "type": "string"}]}], "methods": [{"name": "get", "doc": "Waits for the store.", "async": true, "params": [{"name": "id", "type": "string"}], "returns": {"option": "ticket"}}, {"name": "count", "doc": "Answers at once.", "params": [], "returns": "u32"}]};
 
 /// The caller's side of `tickets`: every method, typed, sent as frames.
 export class TicketsClient {
   /// The interface this client was generated from.
-  static readonly interface = "e70e923252c0fb62";
+  static readonly interface = "61fb6bd3d5cf344a";
   private conn: Connection;
   private at: string;
   /// `at` is where the activation is mounted: its own name unless a parent holds it.

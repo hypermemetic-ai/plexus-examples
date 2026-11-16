@@ -1,6 +1,6 @@
 /// Glaze recipes, and what a batch of one needs.
 #[plexus::activation]
-mod glaze {
+pub mod glaze {
     pub enum Colorant {
         Clear,
         Iron,

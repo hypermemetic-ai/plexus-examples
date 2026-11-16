@@ -1,9 +1,9 @@
-package plexus:export@0.0.1;
+package plexus:%export@0.0.1;
 
 // In the IR and not in WIT: progress.
 /// Progress: what a method reports while the caller waits. Never part of
 /// the answer, and not a parameter.
-interface export {
+interface %export {
   record step {
     done: u32,
     of: u32,
@@ -14,5 +14,5 @@ interface export {
 }
 
 world export-activation {
-  export export;
+  export %export;
 }

@@ -1,15 +1,30 @@
 [package]
 name = "kiln"
-description = "A toy activation: a kiln and its firing log. Written with #[activation]; its WIT is generated."
+description = "A toy activation: a kiln and its firing log. Written with #[activation]; its WIT is generated. A component to wasm, a process natively."
 edition = "2024"
 version = "0.0.0"
 license = "MIT"
 publish = false
 
+# A component to wasm (cdylib, built with --lib); natively, the `kiln` process.
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 plexus = { path = "../../plexus" }
 futures = "0.3"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
 wit-bindgen = { version = "0.63", features = ["async-spawn"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+plexus = { path = "../../plexus", features = ["tokio"] }
+
+[dev-dependencies]
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt", "process", "io-util", "time"] }
+libtest-mimic = "0.8"
+
+[[test]]
+name = "client"
+harness = false

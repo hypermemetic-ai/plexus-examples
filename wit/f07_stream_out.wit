@@ -10,9 +10,9 @@ interface tickets {
   }
 
   /// Every change, as it happens.
-  watch: func(under: string) -> stream<change>;
+  watch: async func(under: string) -> stream<change>;
   /// Every id under a ticket: nothing to wait for.
-  ids: func(under: string) -> stream<string>;
+  ids: async func(under: string) -> stream<string>;
 }
 
 world tickets-activation {

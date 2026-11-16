@@ -1,7 +1,7 @@
 {
   "ir": "plexus/0",
   "activation": "kiln",
-  "hash": "a4fe48dbd62f1985",
+  "hash": "abad598999eaf1bc",
   "doc": "A kiln, and the log of what was fired in it.",
   "types": [
     {
@@ -41,6 +41,7 @@
     {
       "name": "fire",
       "doc": "Fire the kiln and write it in the log. It waits out the whole\nfiring, reading by reading; other calls run meanwhile.",
+      "async": true,
       "params": [
         {"name": "cone", "type": "u8"},
         {"name": "hours", "type": "f32"},
@@ -65,6 +66,7 @@
     {
       "name": "heat",
       "doc": "A firing as it happens: a reading every five minutes, climbing\nto the cone's temperature, holding there, then cooling. The\nnext reading is not worked out until the last one is taken.",
+      "async": true,
       "params": [{"name": "cone", "type": "u8"}, {"name": "hours", "type": "f32"}],
       "stream": "reading"
     },

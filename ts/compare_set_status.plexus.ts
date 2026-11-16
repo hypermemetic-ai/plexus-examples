@@ -1,4 +1,4 @@
-// Generated from the IR of `tickets` (interface 072b67cf9be6f8ed). Not edited by hand.
+// Generated from the IR of `tickets` (interface 31074238ce93b36f). Not edited by hand.
 
 import { Connection, Server, each } from "./plexus-rt.ts";
 
@@ -24,12 +24,12 @@ const toTicketsEvent = (v: TicketsEvent): any => v.tag === "status-changed" ? { 
 const fromTicketsEvent = (j: any): TicketsEvent => typeof j === "string" ? { tag: j } as TicketsEvent : "status-changed" in j ? { tag: "status-changed", val: { id: fromTicketRef(j["status-changed"]["id"]), status: fromStatus(j["status-changed"]["status"]) } } : "not-found" in j ? { tag: "not-found", val: fromTicketRef(j["not-found"]) } : "error" in j ? { tag: "error", val: j["error"] } : j;
 
 /// The IR this file was generated from: what `_ir` answers.
-export const ticketsIr = {"ir": "plexus/0", "activation": "tickets", "hash": "072b67cf9be6f8ed", "doc": "menger's `tickets.set_status`, as it would be written here. For the\ncomparison with today's IR; its event has three of the real one's cases.", "roles": [{"name": "editor", "grants": ["tickets.set-status"]}], "types": [{"name": "ticket-ref", "doc": "A ticket by any form of its address.", "alias": "string"}, {"name": "message", "alias": "string"}, {"name": "status", "enum": [{"name": "pending"}, {"name": "ready"}, {"name": "coding"}, {"name": "in-review"}, {"name": "blocked"}, {"name": "complete"}, {"name": "draft"}, {"name": "epic"}, {"name": "superseded"}, {"name": "canceled"}, {"name": "doc"}]}, {"name": "caller-source", "enum": [{"name": "app"}, {"name": "api"}, {"name": "pipeline"}]}, {"name": "tickets-event", "variant": [{"name": "status-changed", "record": [{"name": "id", "type": "ticket-ref"}, {"name": "status", "type": "status"}]}, {"name": "not-found", "type": "ticket-ref"}, {"name": "error", "type": "string"}]}], "methods": [{"name": "set-status", "doc": "Set a ticket's status.", "caller": "required", "grant": "tickets.set-status", "target": "id", "params": [{"name": "id", "type": "ticket-ref"}, {"name": "message", "type": {"option": "message"}}, {"name": "restore-children", "type": "bool", "default": false}, {"name": "source", "type": "caller-source", "default": "api"}, {"name": "status", "type": "status"}], "stream": "tickets-event"}]};
+export const ticketsIr = {"ir": "plexus/0", "activation": "tickets", "hash": "31074238ce93b36f", "doc": "menger's `tickets.set_status`, as it would be written here. For the\ncomparison with today's IR; its event has three of the real one's cases.", "roles": [{"name": "editor", "grants": ["tickets.set-status"]}], "types": [{"name": "ticket-ref", "doc": "A ticket by any form of its address.", "alias": "string"}, {"name": "message", "alias": "string"}, {"name": "status", "enum": [{"name": "pending"}, {"name": "ready"}, {"name": "coding"}, {"name": "in-review"}, {"name": "blocked"}, {"name": "complete"}, {"name": "draft"}, {"name": "epic"}, {"name": "superseded"}, {"name": "canceled"}, {"name": "doc"}]}, {"name": "caller-source", "enum": [{"name": "app"}, {"name": "api"}, {"name": "pipeline"}]}, {"name": "tickets-event", "variant": [{"name": "status-changed", "record": [{"name": "id", "type": "ticket-ref"}, {"name": "status", "type": "status"}]}, {"name": "not-found", "type": "ticket-ref"}, {"name": "error", "type": "string"}]}], "methods": [{"name": "set-status", "doc": "Set a ticket's status.", "async": true, "caller": "required", "grant": "tickets.set-status", "target": "id", "params": [{"name": "id", "type": "ticket-ref"}, {"name": "message", "type": {"option": "message"}}, {"name": "restore-children", "type": "bool", "default": false}, {"name": "source", "type": "caller-source", "default": "api"}, {"name": "status", "type": "status"}], "stream": "tickets-event"}]};
 
 /// The caller's side of `tickets`: every method, typed, sent as frames.
 export class TicketsClient {
   /// The interface this client was generated from.
-  static readonly interface = "072b67cf9be6f8ed";
+  static readonly interface = "31074238ce93b36f";
   private conn: Connection;
   private at: string;
   /// `at` is where the activation is mounted: its own name unless a parent holds it.

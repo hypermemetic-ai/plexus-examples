@@ -1,7 +1,7 @@
 {
   "ir": "plexus/0",
   "activation": "tickets",
-  "hash": "072b67cf9be6f8ed",
+  "hash": "31074238ce93b36f",
   "doc": "menger's `tickets.set_status`, as it would be written here. For the\ncomparison with today's IR; its event has three of the real one's cases.",
   "roles": [{"name": "editor", "grants": ["tickets.set-status"]}],
   "types": [
@@ -40,6 +40,7 @@
     {
       "name": "set-status",
       "doc": "Set a ticket's status.",
+      "async": true,
       "caller": "required",
       "grant": "tickets.set-status",
       "target": "id",

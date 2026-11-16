@@ -1,4 +1,4 @@
-// Generated from the IR of `tickets` (interface 1bbc1163a752a95b). Not edited by hand.
+// Generated from the IR of `tickets` (interface adeaff437d5eb9e5). Not edited by hand.
 
 import { Connection, Server, each } from "./plexus-rt.ts";
 
@@ -8,12 +8,12 @@ const toChange = (v: Change): any => ({ "id": v.id, "status": v.status });
 const fromChange = (j: any): Change => ({ id: j["id"], status: j["status"] });
 
 /// The IR this file was generated from: what `_ir` answers.
-export const ticketsIr = {"ir": "plexus/0", "activation": "tickets", "hash": "1bbc1163a752a95b", "doc": "A stream out: many items, one at a time, until there are no more.\n`impl Stream` may wait between items; `impl Iterator` is accepted for\none that never does.", "types": [{"name": "change", "record": [{"name": "id", "type": "string"}, {"name": "status", "type": "string"}]}], "methods": [{"name": "watch", "doc": "Every change, as it happens.", "params": [{"name": "under", "type": "string"}], "stream": "change"}, {"name": "ids", "doc": "Every id under a ticket: nothing to wait for.", "params": [{"name": "under", "type": "string"}], "stream": "string"}]};
+export const ticketsIr = {"ir": "plexus/0", "activation": "tickets", "hash": "adeaff437d5eb9e5", "doc": "A stream out: many items, one at a time, until there are no more.\n`impl Stream` may wait between items; `impl Iterator` is accepted for\none that never does.", "types": [{"name": "change", "record": [{"name": "id", "type": "string"}, {"name": "status", "type": "string"}]}], "methods": [{"name": "watch", "doc": "Every change, as it happens.", "async": true, "params": [{"name": "under", "type": "string"}], "stream": "change"}, {"name": "ids", "doc": "Every id under a ticket: nothing to wait for.", "async": true, "params": [{"name": "under", "type": "string"}], "stream": "string"}]};
 
 /// The caller's side of `tickets`: every method, typed, sent as frames.
 export class TicketsClient {
   /// The interface this client was generated from.
-  static readonly interface = "1bbc1163a752a95b";
+  static readonly interface = "adeaff437d5eb9e5";
   private conn: Connection;
   private at: string;
   /// `at` is where the activation is mounted: its own name unless a parent holds it.

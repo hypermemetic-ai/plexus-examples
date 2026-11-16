@@ -4,13 +4,16 @@ Small activations written with `#[plexus::activation]`. Every part of Plexus v2 
 
 | | |
 |---|---|
-| `kiln` | A kiln and its firing log: an `async fn`, an `impl Stream`, a typed error. Builds to a wasm component. |
-| `glaze` | Glaze recipes: a second activation, held beside the kiln. Builds to a wasm component. |
+| `kiln` | A kiln and its firing log: an `async fn`, an `impl Stream`, a typed error. Builds to a wasm component, and natively to the `kiln` process. |
+| `glaze` | Glaze recipes: a second activation, held beside the kiln. Builds to a wasm component, and natively to the `glaze` process. |
 | `showcase` | One small activation per thing the IR can say. Each compiles; none is served. |
 
 ```sh
 cargo build -p showcase
-cargo build -p kiln -p glaze --profile web --target wasm32-unknown-unknown
+cargo build -p kiln -p glaze --lib --profile web --target wasm32-unknown-unknown   # the components (--lib: the binaries are native)
+cargo run -p kiln -- --ws 127.0.0.1:0      # the kiln as a process: `main` is one line, plexus::main; no flag serves stdin and stdout
+cargo test -p kiln -p glaze                # each process over stdio and a WebSocket; the generated TypeScript client against it in Node
+                                           # (ignored, with why, without Node 22.13+ or ../plexus-rt/dist: npm run build there)
 ```
 
 Every example's IR is kept in `ir/`: a showcase file as `ir/<file>.json`, kiln and glaze as `ir/kiln.json` and `ir/glaze.json`. plexus-macros' `goldens` test fails, showing the difference, when the macro writes anything else; plexus-ir reads and writes each back. To keep what the macro writes now, from `../plexus-macros`:
@@ -24,7 +27,5 @@ Each IR's TypeScript and WIT, as `plexus-gen` writes them from the kept IR, are 
 ```sh
 BLESS=1 cargo test goldens
 ```
-
-The WIT in `wit/` says `func` where an example's own says `async func`: an IR's JSON does not say which methods wait.
 
 The Plexus crates are expected beside this checkout: `../plexus`, `../plexus-macros`, `../plexus-ir`. Tracker: LAYERS-9.

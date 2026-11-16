@@ -1,6 +1,6 @@
 /// A kiln, and the log of what was fired in it.
 #[plexus::activation]
-mod kiln {
+pub mod kiln {
     /// One firing.
     pub struct Firing {
         pub id: u32,

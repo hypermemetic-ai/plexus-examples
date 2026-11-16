@@ -10,7 +10,7 @@ interface tickets {
   }
 
   /// Waits for the store.
-  get: func(id: string) -> option<ticket>;
+  get: async func(id: string) -> option<ticket>;
   /// Answers at once.
   count: func() -> u32;
 }

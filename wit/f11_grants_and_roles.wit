@@ -8,7 +8,7 @@ interface tickets {
   /// A viewer of this ticket may read it.
   get: func(id: string) -> string;
   /// Answers only what the caller may see.
-  list: func() -> list<string>;
+  %list: func() -> list<string>;
   /// An editor of this ticket may move it.
   set-status: func(id: string, status: string) -> string;
   delete: func(id: string) -> bool;

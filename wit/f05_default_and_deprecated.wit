@@ -9,7 +9,7 @@ interface tickets {
     more: bool,
   }
 
-  list: func(limit: u32, after: string, count: option<u32>) -> page;
+  %list: func(limit: u32, after: string, count: option<u32>) -> page;
 }
 
 world tickets-activation {
