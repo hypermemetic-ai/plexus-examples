@@ -141,7 +141,7 @@ async fn a_restart_on_the_same_data_directory_keeps_the_log() {
     let (first, said) = a_run(Some(&dir), &["ada", "bo"]).await;
     assert_eq!(first.as_array().unwrap().len(), 2);
     assert_eq!(said, "", "a kiln given a directory says nothing");
-    assert!(dir.join("kiln.db").is_file());
+    assert!(dir.join("kiln/kiln.db").is_file(), "the kiln's file in its place's directory");
     let (after, _) = a_run(Some(&dir), &["cy"]).await;
     let by: Vec<_> = after.as_array().unwrap().iter().map(|f| (f["id"].as_u64().unwrap(), f["loaded-by"].as_str().unwrap().to_owned())).collect();
     assert_eq!(by, [(1, "ada".into()), (2, "bo".into()), (3, "cy".into())]);

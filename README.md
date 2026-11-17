@@ -17,7 +17,7 @@ scripts/web.sh --manifest-path ../plexus/engine/Cargo.toml
                                            # what still needs clang (SQLite's C), in a container: the one engine
                                            # (../plexus-rt/scripts/engine.sh runs this); prints the directory of the .wasm files
 cargo run -p kiln -- --ws 127.0.0.1:0      # the kiln as a process: `main` is one line, plexus::main; no flag serves stdin and stdout
-cargo run -p kiln -- --data DIR            # its log in DIR/kiln.db, kept across a restart (no --data: in memory, said on stderr)
+cargo run -p kiln -- --data DIR            # its log in DIR/kiln/kiln.db (the directory of the place it is served at), kept across a restart (no --data: in memory, said on stderr)
 cargo test -p kiln -p glaze                # each process over stdio and a WebSocket, the kiln's log across a restart; the generated TypeScript client against it in Node
                                            # (ignored, with why, without Node 22.13+ or ../plexus-rt/dist: npm run build there)
 cargo build -p studio -p glaze --bins && cargo run -p studio -- --ws 127.0.0.1:0   # the studio, which starts glaze beside it
