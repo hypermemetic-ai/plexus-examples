@@ -33,8 +33,7 @@ pub mod kiln {
     }
 
     use futures::{Stream, StreamExt};
-    use plexus::Store;
-    use plexus::rusqlite::{OptionalExtension, Row, params};
+    use plexus::store::{Result, Row, Store, Value};
 
     pub struct Kiln {
         store: Store,
@@ -48,13 +47,13 @@ pub mod kiln {
 
     const FIRING: &str = "select id, cone, hours, loaded_by from firing";
 
-    fn firing(row: &Row) -> plexus::rusqlite::Result<Firing> {
-        Ok(Firing { id: row.get(0)?, cone: row.get(1)?, hours: row.get::<_, f64>(2)? as f32, loaded_by: row.get(3)? })
+    fn firing(row: &Row) -> Result<Firing> {
+        Ok(Firing { id: row.get(0)?, cone: row.get(1)?, hours: row.get(2)?, loaded_by: row.get(3)? })
     }
 
     impl Kiln {
-        fn one(&self, sql: &str, id: Option<u32>) -> Option<Firing> {
-            self.store.query_row(sql, plexus::rusqlite::params_from_iter(id), firing).optional().expect("the kiln's store reads")
+        fn one(&self, sql: &str, params: &[Value]) -> Option<Firing> {
+            self.store.query_one(sql, params, firing).expect("the kiln's store reads")
         }
 
         /// Fire the kiln and write it in the log. It waits out the whole
@@ -71,20 +70,20 @@ pub mod kiln {
                 plexus::yield_now().await;
             }
             let id = self.store
-                .query_row("insert into firing (cone, hours, loaded_by) values (?1, ?2, ?3) returning id", params![cone, hours as f64, loaded_by], |r| r.get(0))
-                .expect("the kiln's store writes");
+                .query_one("insert into firing (cone, hours, loaded_by) values (?1, ?2, ?3) returning id", &[cone.into(), hours.into(), loaded_by.as_str().into()], |r| r.get(0))
+                .expect("the kiln's store writes")
+                .expect("an insert answers its id");
             Ok(Firing { id, cone, hours, loaded_by })
         }
 
         /// Every firing, oldest first.
         pub fn log(&self) -> Vec<Firing> {
-            let mut all = self.store.prepare_cached(&format!("{FIRING} order by id")).expect("the kiln's store reads");
-            all.query_map([], firing).and_then(Iterator::collect).expect("the kiln's store reads")
+            self.store.query(&format!("{FIRING} order by id"), &[], firing).expect("the kiln's store reads")
         }
 
         /// One firing by its id.
         pub fn get(&self, id: u32) -> Result<Firing, KilnError> {
-            self.one(&format!("{FIRING} where id = ?1"), Some(id)).ok_or(KilnError::NotFound(id))
+            self.one(&format!("{FIRING} where id = ?1"), &[id.into()]).ok_or(KilnError::NotFound(id))
         }
 
         /// A firing as it happens: a reading every five minutes, climbing
@@ -109,7 +108,7 @@ pub mod kiln {
 
         /// The hottest firing so far, if there was one.
         pub fn hottest(&self) -> Option<Firing> {
-            self.one(&format!("{FIRING} order by cone desc, id desc limit 1"), None)
+            self.one(&format!("{FIRING} order by cone desc, id desc limit 1"), &[])
         }
     }
 }

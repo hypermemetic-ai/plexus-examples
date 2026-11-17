@@ -5,14 +5,17 @@ Small activations written with `#[plexus::activation]`. Every part of Plexus v2 
 | | |
 |---|---|
 | `kiln` | A kiln and its firing log: an `async fn`, an `impl Stream`, a typed error; the log kept in SQLite through `plexus::Store`. Builds to a wasm component, and natively to the `kiln` process. |
-| `glaze` | Glaze recipes: a second activation, held beside the kiln. Builds to a wasm component, and natively to the `glaze` process. |
+| `glaze` | Glaze recipes, kept in a `plexus::Store` of their own: a second activation, held beside the kiln. Builds to a wasm component, and natively to the `glaze` process. |
 | `studio` | An activation that holds others: the kiln in its process (`&Kiln`), the glaze activation across a channel (`Box<dyn Activation>`), the `glaze` binary started as its child. Native only. |
 | `showcase` | One small activation per thing the IR can say. Each compiles; none is served. |
 
 ```sh
 cargo build -p showcase
-scripts/web.sh -p kiln -p glaze           # the components (wasm32, the web profile) in a container: SQLite to wasm needs clang;
-                                           # prints the directory of the .wasm files
+cargo build --lib --profile web --target wasm32-unknown-unknown -p kiln -p glaze
+                                           # the components: their store is the import plexus:store/sql, so plain cargo, no clang
+scripts/web.sh --manifest-path ../plexus/engine/Cargo.toml
+                                           # what still needs clang (SQLite's C), in a container: the one engine
+                                           # (../plexus-rt/scripts/engine.sh runs this); prints the directory of the .wasm files
 cargo run -p kiln -- --ws 127.0.0.1:0      # the kiln as a process: `main` is one line, plexus::main; no flag serves stdin and stdout
 cargo run -p kiln -- --data DIR            # its log in DIR/kiln.db, kept across a restart (no --data: in memory, said on stderr)
 cargo test -p kiln -p glaze                # each process over stdio and a WebSocket, the kiln's log across a restart; the generated TypeScript client against it in Node

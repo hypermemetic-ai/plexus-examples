@@ -114,7 +114,7 @@ fn connect(server: Server) -> Connection {
 /// The glaze activation, served in memory, held across that channel.
 fn glaze() -> Remote {
     let mut server = Server::new();
-    glaze::glaze::serve(glaze::glaze::Glaze, &mut server, "glaze");
+    glaze::glaze::serve(glaze::glaze::Glaze::default(), &mut server, "glaze");
     Remote::new(connect(server), "glaze")
 }
 
