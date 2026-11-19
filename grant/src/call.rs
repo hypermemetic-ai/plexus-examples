@@ -2,7 +2,7 @@
 //! method's other arguments are filled from it.
 
 use crate::path::{Keys, Path};
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -184,9 +184,15 @@ pub trait Context<A>: Sized {
 #[derive(Default)]
 pub struct Connection {
     opened: RefCell<HashMap<(Principal, Path), (u64, Rc<dyn Any>)>>,
+    ran: Cell<u32>,
 }
 
 impl Connection {
+    /// How many openings this connection has had to run, not remember.
+    pub fn ran(&self) -> u32 {
+        self.ran.get()
+    }
+
     pub fn opened<T: 'static, E>(&self, who: &Principal, at: Path, generation: u64, open: impl FnOnce() -> Result<T, E>) -> Result<Rc<T>, E> {
         let key = (who.clone(), at);
         if let Some((kept_at, kept)) = self.opened.borrow().get(&key) {
@@ -197,6 +203,7 @@ impl Connection {
             }
         }
         // A refusal is never kept: the next call asks again.
+        self.ran.set(self.ran.get() + 1);
         let v = Rc::new(open()?);
         self.opened.borrow_mut().insert(key, (generation, v.clone()));
         Ok(v)
