@@ -1,7 +1,8 @@
 //! What a call carries besides its parameters, and the one trait by which a
 //! method's other arguments are filled from it.
 
-use crate::path::Path;
+use crate::path::{Keys, Path};
+use std::cell::RefCell;
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -13,8 +14,8 @@ pub struct Principal(pub String);
 
 /// One call, as the server sees it before the method runs.
 pub struct Call {
-    /// The method's served path: `studio.kiln.fire`, parsed where the
-    /// call came in.
+    /// The call's address: `studio[tenant=acme].kiln[3].fire`, parsed where
+    /// the call came in.
     pub path: Path,
     /// The key the far end of this connection proved in TLS. A browser's
     /// connection has none.
@@ -55,6 +56,8 @@ pub enum Refusal {
     Missing { what: &'static str },
     /// The principal is not known to this activation.
     Unknown { principal: Principal },
+    /// A level of the path was opened with a key it cannot read, or none.
+    BadKey { at: Path, why: &'static str },
 }
 
 /// What an argument asks of a call. It is in the IR, so a client knows,
@@ -160,10 +163,42 @@ impl Call {
     }
 }
 
-/// What the macro checks, at compile time, of each argument it fills: that
-/// what the IR says the argument needs is what the type says. The IR is
-/// written from the source alone, so the source says it once
-/// (`context(User: caller)`), and this keeps the two the same.
-pub const fn agrees<A, T: FromCall<A>>(ir: Needs) -> bool {
-    T::NEEDS.caller == ir.caller
+/// An activation's context: what it is opened with. A struct, each field
+/// said to come from the call (`#[from(caller)]`, `#[from(server)]`,
+/// `#[from(session)]`, each a `FromCall`) or, with no attribute, sent by the
+/// caller as a key of the activation's segment. `#[derive(plexus::Context)]`
+/// writes this from the struct, and the fields sent are in the IR.
+pub trait Context<A>: Sized {
+    /// The fields the caller sends, by name: the keys of the segment.
+    const SENT: &'static [&'static str];
+    const NEEDS: Needs;
+    fn fill(call: &Call, activation: &A, at: &Path, keys: &Keys) -> Result<Self, Refusal>;
+}
+
+/// One connection's memory of what it has opened. Opening a level is a
+/// function of who is calling and the level's address, so its answer is
+/// kept and the function is not run again, until anything that could change
+/// the answer changes: `generation` is that count. Nothing here is state a
+/// caller depends on: a new connection, or a dropped entry, opens again and
+/// gets the same answer.
+#[derive(Default)]
+pub struct Connection {
+    opened: RefCell<HashMap<(Principal, Path), (u64, Rc<dyn Any>)>>,
+}
+
+impl Connection {
+    pub fn opened<T: 'static, E>(&self, who: &Principal, at: Path, generation: u64, open: impl FnOnce() -> Result<T, E>) -> Result<Rc<T>, E> {
+        let key = (who.clone(), at);
+        if let Some((kept_at, kept)) = self.opened.borrow().get(&key) {
+            if *kept_at == generation {
+                if let Ok(v) = kept.clone().downcast::<T>() {
+                    return Ok(v);
+                }
+            }
+        }
+        // A refusal is never kept: the next call asks again.
+        let v = Rc::new(open()?);
+        self.opened.borrow_mut().insert(key, (generation, v.clone()));
+        Ok(v)
+    }
 }

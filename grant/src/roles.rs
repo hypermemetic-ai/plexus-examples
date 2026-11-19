@@ -29,11 +29,13 @@ pub struct MethodEntry {
 pub struct Methods(pub Vec<MethodEntry>);
 
 impl Methods {
+    /// A method by its shape: a path with keys is taken as the method it names.
     pub fn add(&mut self, path: Path, groups: &[&str]) {
-        self.0.push(MethodEntry { path, groups: groups.iter().map(|g| g.to_string()).collect() });
+        self.0.push(MethodEntry { path: path.shape(), groups: groups.iter().map(|g| g.to_string()).collect() });
     }
     fn index(&self, path: &Path) -> Option<usize> {
-        self.0.iter().position(|m| m.path == *path)
+        let shape = path.shape();
+        self.0.iter().position(|m| m.path == shape)
     }
 }
 

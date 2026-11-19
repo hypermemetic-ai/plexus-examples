@@ -14,6 +14,7 @@
 use crate::call::{Principal, Refusal};
 use crate::path::Path;
 use crate::roles::{Roles, Set};
+use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -35,11 +36,24 @@ pub struct Grant {
 pub struct Grants {
     pub grants: BTreeSet<Grant>,
     pub teams: BTreeMap<String, BTreeSet<Principal>>,
+    /// Counts every change: what a connection's memory of an opening is
+    /// checked against, so a revoked grant is felt at the next call.
+    generation: Cell<u64>,
 }
 
 impl Grants {
     pub fn grant(&mut self, who: Who, role: &str) {
         self.grants.insert(Grant { who, role: role.into() });
+        self.generation.set(self.generation.get() + 1);
+    }
+
+    pub fn revoke(&mut self, who: Who, role: &str) {
+        self.grants.remove(&Grant { who, role: role.into() });
+        self.generation.set(self.generation.get() + 1);
+    }
+
+    pub fn generation(&self) -> u64 {
+        self.generation.get()
     }
 
     fn holds(&self, p: &Principal, who: &Who) -> bool {
@@ -50,8 +64,9 @@ impl Grants {
         }
     }
 
-    /// Decide one call, before the method runs. The refusal names the
-    /// method that was needed.
+    /// Decide one call, before the method runs and before anything is
+    /// opened. `method` is the path's shape: which method, never which
+    /// data. The refusal names it.
     pub fn decide(&self, roles: &Roles, p: Option<&Principal>, method: &Path) -> Result<(), Refusal> {
         let p = p.ok_or(Refusal::SignIn)?;
         let ok = self.grants.iter().any(|g| self.holds(p, &g.who) && roles.grants(&g.role, method));
