@@ -99,8 +99,16 @@ pub mod studio {
         /// under the old one is opened again.
         pub policy: Cell<u64>,
         pub kiln: Kiln,
-        /// How often each opening ran: for the tests.
-        pub opened: Cell<(u32, u32)>,
+    }
+
+    /// The studio's policy, as two questions. Any shape would do.
+    impl Studio {
+        fn is_member(&self, user: &User, tenant: &str) -> bool {
+            self.members.borrow().get(tenant).is_some_and(|m| m.contains(&user.principal))
+        }
+        fn keeps(&self, me: &Member, kiln: u32) -> bool {
+            self.keepers.borrow().get(&(me.tenant.clone(), kiln)).is_some_and(|k| k.contains(&me.user.principal))
+        }
     }
 
     #[derive(Default)]
@@ -116,8 +124,7 @@ pub mod studio {
         /// The door: the context in, the proof out, or the studio's no.
         // #[open]
         pub fn open(&self, cx: StudioCx) -> Result<Member, Denied> {
-            self.opened.set((self.opened.get().0 + 1, self.opened.get().1));
-            if !self.members.borrow().get(&cx.tenant).is_some_and(|m| m.contains(&cx.user.principal)) {
+            if !self.is_member(&cx.user, &cx.tenant) {
                 return Err(Denied::NotAMember { tenant: cx.tenant });
             }
             Ok(Member { user: cx.user, tenant: cx.tenant, limits: cx.limits })
@@ -131,8 +138,7 @@ pub mod studio {
         /// A kiln, by its number: the same shape one level down.
         // #[child]
         pub fn kiln(&self, me: &Member, number: u32) -> Result<KilnOf, Denied> {
-            self.opened.set((self.opened.get().0, self.opened.get().1 + 1));
-            if !self.keepers.borrow().get(&(me.tenant.clone(), number)).is_some_and(|k| k.contains(&me.user.principal)) {
+            if !self.keeps(me, number) {
                 return Err(Denied::NotYours { kiln: number });
             }
             Ok(KilnOf { number, keeper: me.user.name.clone(), hottest_cone: me.limits.hottest_cone })
@@ -372,8 +378,9 @@ mod tests {
     fn plexus_refuses_by_method_before_anything_is_opened() {
         let w = world();
         // Ben is a member and may look, but holds no role with `studio.kiln.fire`.
-        assert_eq!(w.call(&Connection::default(), Some(BEN), FIRE_3, &[6]), Err(Refusal::Forbidden { grant: path("studio.kiln.fire") }));
-        assert_eq!(w.studio.opened.get(), (0, 0), "no opening ran, and no record was read");
+        let conn = Connection::default();
+        assert_eq!(w.call(&conn, Some(BEN), FIRE_3, &[6]), Err(Refusal::Forbidden { grant: path("studio.kiln.fire") }));
+        assert_eq!(conn.ran(), 0, "no opening ran, and no record was read");
     }
 
     #[test]
@@ -394,14 +401,15 @@ mod tests {
             w.call(&conn, Some(ADA), FIRE_3, &[6]).unwrap().unwrap();
         }
         w.call(&conn, Some(ADA), "studio[tenant=acme].kiln[3].log", &[]).unwrap().unwrap();
-        assert_eq!(w.studio.opened.get(), (1, 1), "four calls, each level opened once");
+        assert_eq!(conn.ran(), 2, "four calls: the studio opened once, the kiln once");
         // A connection that knows nothing, as after a reconnect: the same call, the same answer.
-        assert_eq!(w.call(&Connection::default(), Some(ADA), FIRE_3, &[6]), Ok(Ok("kiln 3 firing to cone 6 for Ada".into())));
-        assert_eq!(w.studio.opened.get(), (2, 2));
+        let again = Connection::default();
+        assert_eq!(w.call(&again, Some(ADA), FIRE_3, &[6]), Ok(Ok("kiln 3 firing to cone 6 for Ada".into())));
+        assert_eq!(again.ran(), 2);
         // A refusal is not remembered.
         assert!(w.call(&conn, Some(ADA), "studio[tenant=acme].kiln[4].fire", &[6]).unwrap().is_err());
         assert!(w.call(&conn, Some(ADA), "studio[tenant=acme].kiln[4].fire", &[6]).unwrap().is_err());
-        assert_eq!(w.studio.opened.get(), (2, 4));
+        assert_eq!(conn.ran(), 4, "kiln 4 was asked for twice, and opened neither time");
     }
 
     #[test]
