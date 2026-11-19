@@ -8,6 +8,7 @@ Small activations written with `#[plexus::activation]`. Every part of Plexus v2 
 | `glaze` | Glaze recipes, kept in a `plexus::Store` of their own: a second activation, held beside the kiln. Builds to a wasm component, and natively to the `glaze` process. |
 | `studio` | An activation that holds others: the kiln in its process (`&Kiln`), the glaze activation across a channel (`Box<dyn Activation>`), the `glaze` binary started as its child. Native only. |
 | `showcase` | One small activation per thing the IR can say. Each compiles; none is served. |
+| `grant` | A sketch of who is calling and what they may call: a method's other arguments filled from the call (`FromCall`: `Caller`, `Option<T>`, `Ctx<T>`, an application's `User`), method paths as values, roles as expressions over methods (`kiln.** && group:read`) compiled to bitsets, grants by method, a delegation that only narrows. Plain Rust, no Plexus dependency; the kiln is called by hand as `#[activation]` would. |
 
 ```sh
 cargo build -p showcase
@@ -22,6 +23,7 @@ cargo test -p kiln -p glaze                # each process over stdio and a WebSo
                                            # (ignored, with why, without Node 22.13+ or ../plexus-rt/dist: npm run build there)
 cargo build -p studio -p glaze --bins && cargo run -p studio -- --ws 127.0.0.1:0   # the studio, which starts glaze beside it
 cargo test -p studio                       # each way of holding, in memory; the studio process and its glaze child
+cargo test -p grant                        # the grant sketch: context, roles, grants, delegation
 ```
 
 Every example's IR is kept in `ir/`: a showcase file as `ir/<file>.json`, kiln and glaze as `ir/kiln.json` and `ir/glaze.json`. plexus-macros' `goldens` test fails, showing the difference, when the macro writes anything else; plexus-ir reads and writes each back. To keep what the macro writes now, from `../plexus-macros`:
