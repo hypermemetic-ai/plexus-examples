@@ -3,9 +3,9 @@
 //! An activation is a function from a context to the methods it may be
 //! called with. Its context is a struct: some fields the server fills from
 //! the call, the rest the caller sends, as the keys of the activation's
-//! segment of the path. Opening runs once, and what it answers, the
-//! application's own value, is what every method is given. A child per key
-//! is the same one level down: `studio[tenant=acme].kiln[3].fire`.
+//! segment of the path. Opening runs once, before any method, and every
+//! method may take the context. A child per key is the same one level
+//! down: `studio[tenant=acme].kiln[3].fire`.
 //!
 //! Plexus decides up to the method: whether this caller holds a role with
 //! `studio.kiln.fire` in it. Whether they may have this studio, or this
@@ -30,23 +30,6 @@ pub mod studio {
     use std::collections::{BTreeMap, BTreeSet};
     use std::rc::Rc;
 
-    /// The studio's idea of a person: who signed in, and what the studio
-    /// keeps about them. The application's type, not plexus's.
-    #[derive(Debug, Clone)]
-    pub struct User {
-        pub principal: Principal,
-        pub name: String,
-    }
-
-    /// A user is the caller, looked up in the studio's own records.
-    impl FromCall<Studio> for User {
-        const NEEDS: Needs = Needs::CALLER;
-        fn from_call(call: &Call, studio: &Studio) -> Result<User, Refusal> {
-            let Caller(p) = Caller::from_call(call, studio)?;
-            studio.people.borrow().get(&p).cloned().ok_or(Refusal::Unknown { principal: p })
-        }
-    }
-
     /// Given to the server at start.
     pub struct Limits {
         pub hottest_cone: u8,
@@ -54,31 +37,17 @@ pub mod studio {
 
     // ---- what the author writes ----
 
-    /// What the studio is opened with.
+    /// What the studio is opened with. Every method of the studio, and of
+    /// what it holds, may take it.
     // #[derive(plexus::Context)]
     pub struct StudioCx {
+        /// Who is calling: plexus's own type. Nothing of the studio's is needed.
         // #[from(caller)]
-        pub user: User,
+        pub caller: Caller,
         // #[from(server)]
         pub limits: Rc<Limits>,
         /// No attribute: the caller sends it. `studio[tenant=acme]`.
         pub tenant: String,
-    }
-
-    /// What opening the studio gives: proof that this user is a member of
-    /// this tenant. Every method of the studio takes it, so none can be
-    /// reached without it and none checks membership again.
-    pub struct Member {
-        pub user: User,
-        pub tenant: String,
-        pub limits: Rc<Limits>,
-    }
-
-    /// What opening a kiln gives: proof that this member keeps it.
-    pub struct KilnOf {
-        pub number: u32,
-        pub keeper: String,
-        pub hottest_cone: u8,
     }
 
     /// The application's own no, typed: at an opening or in a method.
@@ -91,29 +60,20 @@ pub mod studio {
 
     #[derive(Default)]
     pub struct Studio {
-        pub people: RefCell<BTreeMap<Principal, User>>,
         /// The studio's own policy. Plexus never reads either table.
         pub members: RefCell<BTreeMap<String, BTreeSet<Principal>>>,
         pub keepers: RefCell<BTreeMap<(String, u32), BTreeSet<Principal>>>,
         /// Counted up whenever the policy changes, so what was opened
         /// under the old one is opened again.
         pub policy: Cell<u64>,
-        pub kiln: Kiln,
+        pub log: Rc<RefCell<Vec<String>>>,
     }
 
-    /// The studio's policy, as two questions. Any shape would do.
-    impl Studio {
-        fn is_member(&self, user: &User, tenant: &str) -> bool {
-            self.members.borrow().get(tenant).is_some_and(|m| m.contains(&user.principal))
-        }
-        fn keeps(&self, me: &Member, kiln: u32) -> bool {
-            self.keepers.borrow().get(&(me.tenant.clone(), kiln)).is_some_and(|k| k.contains(&me.user.principal))
-        }
-    }
-
-    #[derive(Default)]
+    /// One kiln: what `studio.kiln(3)` hands back, and so what its methods
+    /// are called on.
     pub struct Kiln {
-        pub log: RefCell<Vec<String>>,
+        number: u32,
+        log: Rc<RefCell<Vec<String>>>,
     }
 
     // #[plexus::activation(
@@ -121,45 +81,48 @@ pub mod studio {
     //     roles(viewer = "group:read", firer = "role:viewer || studio.kiln.fire", keeper = "studio.**"),
     // )]
     impl Studio {
-        /// The door: the context in, the proof out, or the studio's no.
+        /// The door: may this caller have this tenant's studio at all?
+        /// Run before any method, so no method asks again.
         // #[open]
-        pub fn open(&self, cx: StudioCx) -> Result<Member, Denied> {
-            if !self.is_member(&cx.user, &cx.tenant) {
-                return Err(Denied::NotAMember { tenant: cx.tenant });
+        pub fn open(&self, cx: &StudioCx) -> Result<(), Denied> {
+            match self.members.borrow().get(&cx.tenant) {
+                Some(members) if members.contains(cx.caller.principal()) => Ok(()),
+                _ => Err(Denied::NotAMember { tenant: cx.tenant.clone() }),
             }
-            Ok(Member { user: cx.user, tenant: cx.tenant, limits: cx.limits })
         }
 
         // #[group(read)]
-        pub fn status(&self, me: &Member) -> String {
-            format!("{}: {} firings, seen by {}", me.tenant, self.kiln.log.borrow().len(), me.user.name)
+        pub fn status(&self, cx: &StudioCx) -> String {
+            format!("{}: {} firings, seen by {}", cx.tenant, self.log.borrow().len(), cx.caller.principal().0)
         }
 
         /// A kiln, by its number: the same shape one level down.
         // #[child]
-        pub fn kiln(&self, me: &Member, number: u32) -> Result<KilnOf, Denied> {
-            if !self.keeps(me, number) {
-                return Err(Denied::NotYours { kiln: number });
+        pub fn kiln(&self, cx: &StudioCx, number: u32) -> Result<Kiln, Denied> {
+            match self.keepers.borrow().get(&(cx.tenant.clone(), number)) {
+                Some(keepers) if keepers.contains(cx.caller.principal()) => Ok(Kiln { number, log: self.log.clone() }),
+                _ => Err(Denied::NotYours { kiln: number }),
             }
-            Ok(KilnOf { number, keeper: me.user.name.clone(), hottest_cone: me.limits.hottest_cone })
         }
     }
 
     // #[plexus::activation]
     impl Kiln {
-        /// No kiln number and no user: `at` is both, already decided.
+        /// No kiln number: `self` is the kiln. A child is reached through
+        /// its parent, so it may take the parent's context.
         // #[group(write)]
-        pub fn fire(&self, at: &KilnOf, cone: u8) -> Result<String, Denied> {
-            if cone > at.hottest_cone {
+        pub fn fire(&self, cx: &StudioCx, cone: u8) -> Result<String, Denied> {
+            if cone > cx.limits.hottest_cone {
                 return Err(Denied::TooHot { cone });
             }
-            self.log.borrow_mut().push(format!("{} fired kiln {} to cone {cone}", at.keeper, at.number));
-            Ok(format!("kiln {} firing to cone {cone} for {}", at.number, at.keeper))
+            let who = &cx.caller.principal().0;
+            self.log.borrow_mut().push(format!("{who} fired kiln {} to cone {cone}", self.number));
+            Ok(format!("kiln {} firing to cone {cone} for {who}", self.number))
         }
 
         // #[group(read)]
-        pub fn log(&self, at: &KilnOf) -> String {
-            format!("kiln {}: {}", at.number, self.log.borrow().join("; "))
+        pub fn log(&self) -> String {
+            format!("kiln {}: {}", self.number, self.log.borrow().join("; "))
         }
     }
 
@@ -170,7 +133,7 @@ pub mod studio {
         const NEEDS: Needs = Needs::CALLER;
         fn fill(call: &Call, studio: &Studio, at: &Path, keys: &Keys) -> Result<StudioCx, Refusal> {
             Ok(StudioCx {
-                user: User::from_call(call, studio)?,
+                caller: Caller::from_call(call, studio)?,
                 limits: Ctx::<Limits>::from_call(call, studio)?.0,
                 tenant: keys.named("tenant").ok_or(Refusal::BadKey { at: at.clone(), why: "the studio is opened with `tenant`" })?.as_str().into(),
             })
@@ -238,23 +201,25 @@ pub mod studio {
         let segs = path.segments();
 
         // 2. The studio, opened with its context: once a connection, then remembered.
-        let me: Rc<Member> = conn.opened(who, path.prefix(1), generation, || -> Result<Member, Stop> {
-            Ok(studio.open(StudioCx::fill(call, studio, &path.prefix(1), &segs[0].keys)?)?)
+        let cx: Rc<StudioCx> = conn.opened(who, path.prefix(1), generation, || -> Result<StudioCx, Stop> {
+            let cx = StudioCx::fill(call, studio, &path.prefix(1), &segs[0].keys)?;
+            studio.open(&cx)?;
+            Ok(cx)
         })?;
 
         match path.names().as_slice() {
-            ["studio", "status"] => Ok(studio.status(&me)),
+            ["studio", "status"] => Ok(studio.status(&cx)),
             ["studio", "kiln", method] => {
                 // 3. The kiln, opened with its key through the studio already open.
-                let at: Rc<KilnOf> = conn.opened(who, path.prefix(2), generation, || -> Result<KilnOf, Stop> {
+                let kiln: Rc<Kiln> = conn.opened(who, path.prefix(2), generation, || -> Result<Kiln, Stop> {
                     let bad = |why| Refusal::BadKey { at: path.prefix(2), why };
                     let number = segs[1].keys.one().ok_or(bad("a kiln is opened with its number"))?.as_str().parse().map_err(|_| bad("a kiln's number is a number"))?;
-                    Ok(studio.kiln(&me, number)?)
+                    Ok(studio.kiln(&cx, number)?)
                 })?;
-                // 4. The method, given the proof.
+                // 4. The method, on the kiln that was opened.
                 match *method {
-                    "fire" => Ok(studio.kiln.fire(&at, params[0] as u8)?),
-                    "log" => Ok(studio.kiln.log(&at)),
+                    "fire" => Ok(kiln.fire(&cx, params[0] as u8)?),
+                    "log" => Ok(kiln.log()),
                     _ => unreachable!("decided against the methods"),
                 }
             }
@@ -305,7 +270,8 @@ mod tests {
     use crate::grants::{Grants, Link, Who, authority};
     use crate::path::{Path, Pattern};
     use crate::roles::{Methods, RoleError, Roles};
-    use crate::studio::{self, Denied, Limits, Studio, StudioCx, User, client};
+    use crate::call::Caller;
+    use crate::studio::{self, Denied, Limits, Studio, StudioCx, client};
 
     fn path(s: &str) -> Path {
         s.parse().unwrap()
@@ -330,9 +296,6 @@ mod tests {
 
     fn world() -> World {
         let studio = Studio::default();
-        for (who, name) in [(ADA, "Ada"), (BEN, "Ben")] {
-            studio.people.borrow_mut().insert(p(who), User { principal: p(who), name: name.into() });
-        }
         studio.members.borrow_mut().insert("acme".into(), [p(ADA), p(BEN)].into());
         studio.keepers.borrow_mut().insert(("acme".into(), 3), [p(ADA)].into());
         let mut grants = Grants::default();
@@ -369,9 +332,9 @@ mod tests {
     fn the_address_opens_the_studio_then_the_kiln_then_fires() {
         let w = world();
         let conn = Connection::default();
-        assert_eq!(w.call(&conn, Some(ADA), FIRE_3, &[6]), Ok(Ok("kiln 3 firing to cone 6 for Ada".into())));
-        assert_eq!(w.call(&conn, Some(ADA), "studio[tenant=acme].kiln[3].log", &[]), Ok(Ok("kiln 3: Ada fired kiln 3 to cone 6".into())));
-        assert_eq!(w.call(&conn, Some(BEN), "studio[tenant=acme].status", &[]), Ok(Ok("acme: 1 firings, seen by Ben".into())));
+        assert_eq!(w.call(&conn, Some(ADA), FIRE_3, &[6]), Ok(Ok("kiln 3 firing to cone 6 for key:ada".into())));
+        assert_eq!(w.call(&conn, Some(ADA), "studio[tenant=acme].kiln[3].log", &[]), Ok(Ok("kiln 3: key:ada fired kiln 3 to cone 6".into())));
+        assert_eq!(w.call(&conn, Some(BEN), "studio[tenant=acme].status", &[]), Ok(Ok("acme: 1 firings, seen by user:idp:ben".into())));
     }
 
     #[test]
@@ -404,7 +367,7 @@ mod tests {
         assert_eq!(conn.ran(), 2, "four calls: the studio opened once, the kiln once");
         // A connection that knows nothing, as after a reconnect: the same call, the same answer.
         let again = Connection::default();
-        assert_eq!(w.call(&again, Some(ADA), FIRE_3, &[6]), Ok(Ok("kiln 3 firing to cone 6 for Ada".into())));
+        assert_eq!(w.call(&again, Some(ADA), FIRE_3, &[6]), Ok(Ok("kiln 3 firing to cone 6 for key:ada".into())));
         assert_eq!(again.ran(), 2);
         // A refusal is not remembered.
         assert!(w.call(&conn, Some(ADA), "studio[tenant=acme].kiln[4].fire", &[6]).unwrap().is_err());
@@ -450,7 +413,7 @@ mod tests {
         // The handle's path is the call.
         let w = world();
         let call = Call::new(studio.kiln(3).fire()).by(ADA).with_server(limits());
-        assert_eq!(studio::serve(&w.studio, &w.grants, &w.roles, &Connection::default(), &call, &[6]), Ok(Ok("kiln 3 firing to cone 6 for Ada".into())));
+        assert_eq!(studio::serve(&w.studio, &w.grants, &w.roles, &Connection::default(), &call, &[6]), Ok(Ok("kiln 3 firing to cone 6 for key:ada".into())));
     }
 
     #[test]
@@ -458,15 +421,16 @@ mod tests {
         let w = world();
         let at = path("studio[tenant=acme]");
         let keys = &at.segments()[0].keys;
-        // A stranger who signed in is not a user of this studio.
-        let stranger = Call::new(at.clone()).by("key:stranger").with_server(limits());
-        assert!(matches!(StudioCx::fill(&stranger, &w.studio, &at, keys), Err(Refusal::Unknown { principal }) if principal == p("key:stranger")));
+        // Nobody calling: the context needs a caller.
+        assert!(matches!(StudioCx::fill(&Call::new(at.clone()).with_server(limits()), &w.studio, &at, keys), Err(Refusal::SignIn)));
         // A server never given its limits says which value is missing.
         let bare = Call::new(at.clone()).by(ADA);
         assert!(matches!(StudioCx::fill(&bare, &w.studio, &at, keys), Err(Refusal::Missing { what }) if what.ends_with("Limits")));
-        // A field may be optional: anonymous is `None`, a stranger is still refused.
-        assert!(Option::<User>::from_call(&Call::new(at.clone()), &w.studio).unwrap().is_none());
-        assert!(Option::<User>::from_call(&stranger, &w.studio).is_err());
+        // Filled: who proved what, what the server holds, what the caller sent.
+        let cx = StudioCx::fill(&bare.with_server(limits()), &w.studio, &at, keys).ok().unwrap();
+        assert_eq!((cx.caller.principal(), cx.limits.hottest_cone, cx.tenant.as_str()), (&p(ADA), 10, "acme"));
+        // A field may be optional: an anonymous call is `None`, not a refusal.
+        assert!(Option::<Caller>::from_call(&Call::new(at.clone()), &w.studio).unwrap().is_none());
     }
 
     fn service() -> Methods {
