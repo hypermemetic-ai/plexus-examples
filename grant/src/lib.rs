@@ -19,6 +19,55 @@ pub mod grants;
 pub mod path;
 pub mod roles;
 
+/// The simplest activation with users: no context, no opening, no roles.
+/// A method that wants to know who is calling takes a `Caller`, and that is
+/// all an author writes. An anonymous call to such a method is refused; a
+/// method that takes none is open to anyone.
+pub mod guestbook {
+    use crate::call::{Call, Caller, FromCall, Refusal};
+    use std::cell::RefCell;
+
+    // ---- what the author writes ----
+
+    #[derive(Default)]
+    pub struct Guestbook {
+        entries: RefCell<Vec<(String, String)>>,
+    }
+
+    // #[plexus::activation]
+    impl Guestbook {
+        /// Anyone may read.
+        pub fn read(&self) -> Vec<String> {
+            self.entries.borrow().iter().map(|(who, text)| format!("{who}: {text}")).collect()
+        }
+
+        /// Signing takes who is calling.
+        pub fn sign(&self, caller: &Caller, text: String) -> usize {
+            self.entries.borrow_mut().push((caller.principal().0.clone(), text));
+            self.entries.borrow().len()
+        }
+
+        /// Only the entries the caller wrote: the whole of this guestbook's
+        /// access policy, in the method.
+        pub fn mine(&self, caller: &Caller) -> Vec<String> {
+            self.entries.borrow().iter().filter(|(who, _)| *who == caller.principal().0).map(|(_, text)| text.clone()).collect()
+        }
+    }
+
+    // ---- what #[plexus::activation] writes ----
+
+    /// No roles were declared, so nothing is decided by grant: a method
+    /// that takes a `Caller` needs one, and that is the only rule.
+    pub fn serve(book: &Guestbook, call: &Call, text: &str) -> Result<String, Refusal> {
+        match call.path.names().as_slice() {
+            ["guestbook", "read"] => Ok(book.read().join("\n")),
+            ["guestbook", "sign"] => Ok(book.sign(&Caller::from_call(call, book)?, text.into()).to_string()),
+            ["guestbook", "mine"] => Ok(book.mine(&Caller::from_call(call, book)?).join("\n")),
+            _ => unreachable!(),
+        }
+    }
+}
+
 /// A studio and the kilns in it, as an author would write them, and below
 /// that what the macros would write, by hand.
 pub mod studio {
@@ -431,6 +480,24 @@ mod tests {
         assert_eq!((cx.caller.principal(), cx.limits.hottest_cone, cx.tenant.as_str()), (&p(ADA), 10, "acme"));
         // A field may be optional: an anonymous call is `None`, not a refusal.
         assert!(Option::<Caller>::from_call(&Call::new(at.clone()), &w.studio).unwrap().is_none());
+    }
+
+    #[test]
+    fn the_simplest_activation_with_users_is_a_method_that_takes_a_caller() {
+        use crate::guestbook::{self, Guestbook};
+        let book = Guestbook::default();
+        let call = |method: &str, who: Option<&str>, text: &str| {
+            let mut call = Call::new(path(&format!("guestbook.{method}")));
+            if let Some(who) = who {
+                call = call.by(who);
+            }
+            guestbook::serve(&book, &call, text)
+        };
+        assert_eq!(call("sign", None, "hello"), Err(Refusal::SignIn), "a method that takes a caller needs one");
+        assert_eq!(call("sign", Some(ADA), "fired the big kiln"), Ok("1".into()));
+        assert_eq!(call("sign", Some(BEN), "glazed six bowls"), Ok("2".into()));
+        assert_eq!(call("read", None, ""), Ok("key:ada: fired the big kiln\nuser:idp:ben: glazed six bowls".into()), "anyone reads");
+        assert_eq!(call("mine", Some(BEN), ""), Ok("glazed six bowls".into()));
     }
 
     fn service() -> Methods {
