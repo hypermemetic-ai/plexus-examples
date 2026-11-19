@@ -1,6 +1,6 @@
 [package]
 name = "grant"
-description = "A sketch: a method's arguments filled from the call, users, roles as expressions over methods, grants by method. Plain Rust; not a crate of Plexus."
+description = "A sketch: an activation opened with a context, paths with keys, roles as expressions over methods, grants by method. Plain Rust; not a crate of Plexus."
 edition = "2024"
 version = "0.0.0"
 license = "MIT"
