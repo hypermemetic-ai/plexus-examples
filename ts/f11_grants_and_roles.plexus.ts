@@ -56,9 +56,5 @@ export interface TicketsActivation {
 /// The activation's side: each `open` frame becomes a call into `activation`.
 /// `at` is where it is mounted: its own name unless a parent holds it.
 export function serveTickets(activation: TicketsActivation, server: Server, at: string = "tickets"): void {
-  server.method(at + ".get", (p: any) => activation.get(p["id"]));
-  server.method(at + ".list", (p: any) => activation.list());
-  server.method(at + ".set-status", (p: any) => activation.setStatus(p["id"], p["status"]));
-  server.method(at + ".delete", (p: any) => activation.delete(p["id"]));
-  server.describe(at, ticketsIr);
+  throw new Error("serving this activation requires a trusted caller or an activation context; use the native Plexus server");
 }

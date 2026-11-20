@@ -57,6 +57,5 @@ export interface TicketsActivation {
 /// The activation's side: each `open` frame becomes a call into `activation`.
 /// `at` is where it is mounted: its own name unless a parent holds it.
 export function serveTickets(activation: TicketsActivation, server: Server, at: string = "tickets"): void {
-  server.stream(at + ".set-status", (p: any) => each(activation.setStatus(fromTicketRef(p["id"]), (p["message"] == null ? undefined : fromMessage(p["message"])), (p["restore-children"] ?? false), fromCallerSource((p["source"] ?? "api")), fromStatus(p["status"])), (v: any) => toTicketsEvent(v)));
-  server.describe(at, ticketsIr);
+  throw new Error("serving this activation requires a trusted caller or an activation context; use the native Plexus server");
 }

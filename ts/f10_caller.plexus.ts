@@ -45,7 +45,5 @@ export interface SessionActivation {
 /// The activation's side: each `open` frame becomes a call into `activation`.
 /// `at` is where it is mounted: its own name unless a parent holds it.
 export function serveSession(activation: SessionActivation, server: Server, at: string = "session"): void {
-  server.method(at + ".whoami", (p: any) => activation.whoami());
-  server.method(at + ".greeting", (p: any) => activation.greeting());
-  server.describe(at, sessionIr);
+  throw new Error("serving this activation requires a trusted caller or an activation context; use the native Plexus server");
 }
