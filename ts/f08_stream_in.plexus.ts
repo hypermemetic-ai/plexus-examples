@@ -37,7 +37,7 @@ export class MediaClient {
   }
   /// Keep a file. The caller streams its bytes in.
   async put(name: string, chunks: AsyncIterable<Uint8Array>, signal?: AbortSignal): Promise<Kept> {
-    const j = await this.conn.call(this.at + ".put", { "name": name }, (e: any) => fromUploadError(e), each(chunks, (v) => b64(v)), signal);
+    const j = await this.conn.call(this.at + ".put", { "name": name }, (e: any) => fromUploadError(e), chunks, signal, "bytes");
     return fromKept(j);
   }
   /// Count a run's tokens: a stream in of a type of its own.
@@ -68,7 +68,7 @@ export interface MediaActivation {
 /// The activation's side: each `open` frame becomes a call into `activation`.
 /// `at` is where it is mounted: its own name unless a parent holds it.
 export function serveMedia(activation: MediaActivation, server: Server, at: string = "media"): void {
-  server.methodWithInput(at + ".put", async (p: any, input) => { const v = await activation.put(p["name"], each(input, (j: any) => unb64(j))); return toKept(v); }, (e: any) => toUploadError(e));
+  server.methodWithInput(at + ".put", async (p: any, input) => { const v = await activation.put(p["name"], input); return toKept(v); }, (e: any) => toUploadError(e), "bytes");
   server.methodWithInput(at + ".tokens", (p: any, input) => activation.tokens(p["run"], each(input, (j: any) => j)), (e: any) => toUploadError(e));
   server.method(at + ".status", async (p: any) => { const v = await activation.status(); return toUploadStatus(v); });
   server.method(at + ".receipt", async (p: any) => { const v = await activation.receipt(p["name"]); return (v == null ? undefined : toKept(v)); });
