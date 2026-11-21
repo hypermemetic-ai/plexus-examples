@@ -1,6 +1,6 @@
 [package]
 name = "showcase"
-description = "One small activation per thing the IR can say. Each compiles; none is served."
+description = "One small activation per thing the IR can say. Includes a runnable native input-stream example."
 edition = "2024"
 version = "0.0.0"
 license = "MIT"
@@ -9,3 +9,11 @@ publish = false
 [dependencies]
 plexus = { path = "../../plexus" }
 futures = "0.3"
+sha2 = "0.10"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tempfile = "3"
+
+[dev-dependencies]
+plexus = { path = "../../plexus", features = ["tokio"] }
+tokio = { version = "1", features = ["macros", "rt", "process"] }

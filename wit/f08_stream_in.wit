@@ -1,6 +1,5 @@
 package plexus:media@0.0.1;
 
-// In the IR and not in WIT: a stream in.
 /// A stream in: `Input<T>` is what the caller sends while the call runs.
 /// It is not one of the parameters.
 interface media {
@@ -9,10 +8,24 @@ interface media {
     bytes: u64,
   }
 
+  record upload-status {
+    received: u64,
+    active: u32,
+  }
+
+  variant upload-error {
+    invalid-input(string),
+    storage(string),
+  }
+
   /// Keep a file. The caller streams its bytes in.
-  put: func(name: string) -> kept;
+  put: async func(name: string, chunks: stream<list<u8>>) -> result<kept, upload-error>;
   /// Count a run's tokens: a stream in of a type of its own.
-  tokens: func(run: string) -> u32;
+  tokens: async func(run: string, chunks: stream<string>) -> result<u32, upload-error>;
+  /// Active uploads and bytes read so far, including unfinished uploads.
+  status: func() -> upload-status;
+  /// The receipt of the last completed upload to this name.
+  receipt: func(name: string) -> option<kept>;
 }
 
 world media-activation {
