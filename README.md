@@ -43,7 +43,7 @@ const kept = await media.put(file.name, file.stream(), abortController.signal)
 console.log(kept.bytes, kept.sha256)
 ```
 
-The native handler hashes and writes each chunk to a temporary file as it arrives. A completed upload replaces the file kept under that name for the lifetime of the activation. Failed or cancelled uploads release their temporary files. `npm run test:input` in the sibling `plexus-rt` checkout exercises both mounts in Chromium.
+The native handler hashes and writes each chunk to a temporary file as it arrives. A completed upload replaces the file kept under that name for the lifetime of the activation. Failed or cancelled uploads release their temporary files. `npm run test:input` in the sibling `plexus-rt` checkout exercises both mounts in Chromium. It inspects the WebSocket opcode, chunk ordinal and payload bytes. The browser sends raw chunks on the WebSocket, and the held process receives those chunks as base64 JSON over stdio.
 
 Every example's IR is kept in `ir/`: a showcase file as `ir/<file>.json`, kiln and glaze as `ir/kiln.json` and `ir/glaze.json`. plexus-macros' `goldens` test fails, showing the difference, when the macro writes anything else; plexus-ir reads and writes each back. To keep what the macro writes now, from `../plexus-macros`:
 

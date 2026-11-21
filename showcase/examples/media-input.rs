@@ -16,6 +16,8 @@ async fn main() -> io::Result<()> {
             media::serve(media::Media::default(), &mut server, "studio.media")
         }
         [mode] if mode == "remote" => {
+            // This mount serves the same media interface as the local mode.
+            server.hello(media::HASH);
             let mut child = Command::new(env::current_exe()?);
             child.arg("child");
             server.mount("studio.media", Box::new(Remote::child(child, "media")?));
