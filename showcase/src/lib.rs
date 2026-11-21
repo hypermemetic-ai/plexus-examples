@@ -1,7 +1,6 @@
-//! One small activation per thing the IR can say. Each is a module that
-//! compiles as ordinary Rust; `#[plexus::activation(describe)]` gives it its
+//! One small activation per thing the IR can say. The macro provides
 //! `IR`, `WIT` and `CLIENT_TS`. Each IR is kept in `ir/` (see the README).
-//! None is served.
+//! The native media example serves the input-stream fixture.
 #![allow(dead_code)]
 
 pub mod f01_record;
@@ -11,6 +10,7 @@ pub mod f04_collections;
 pub mod f05_default_and_deprecated;
 pub mod f06_fails;
 pub mod f07_stream_out;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod f08_stream_in;
 pub mod f09_progress;
 pub mod f10_caller;
